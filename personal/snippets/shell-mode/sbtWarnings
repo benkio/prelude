@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: sbt Warnings
+# key: sbtW
+# --
+sbt --supershell=false printWarnings && sbt --supershell=false Test/printWarnings

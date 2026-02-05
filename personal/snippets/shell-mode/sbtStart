@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: sbt Start
+# key: sbtS
+# --
+
+sbt --supershell=false$0

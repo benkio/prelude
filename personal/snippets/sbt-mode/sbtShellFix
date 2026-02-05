@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: scalafix & scalafmt
+# key: sbtSFix
+# --
+scalafixAll; scalafmtAll; scalafmtSbt

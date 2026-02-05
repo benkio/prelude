@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: sbt fix & format
+# key: sbtFix
+# --
+sbt --supershell=false "scalafixAll; scalafmtAll"

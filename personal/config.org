@@ -1,0 +1,99 @@
+# Created <2026-02-05 Thu>
+#+options: toc:2
+#+title: Emacs Configuration
+#+author: Enrico Benini
+* Emacs Prelude Config
+
+Contains the custom configuration for Prelude after proloading
+
+* Setup
+** Disable
+
+1. Remove initial scratch buffer message
+
+#+begin_src emacs-lisp
+  ;; Remove initial scratch buffer message
+  (setq initial-scratch-message "")
+#+end_src
+
+** Prelude Specific
+
+#+begin_src emacs-lisp
+  ;; disable super keybindings
+  (setq prelude-super-keybindings nil)
+#+end_src
+
+** Theme
+
+#+begin_src emacs-lisp
+  ;; Brighter region background, line number, hidle and background of buffer line
+  (set-face-attribute 'region nil :background "0000FF")
+  (set-face-attribute 'line-number-current-line nil :background "0000FF")
+  (set-face-attribute 'idle-highlight nil :background "DarkOrange3")
+  (set-face-attribute 'mode-line nil :background "6600CC")
+#+end_src
+
+** Purescript
+
+#+BEGIN_SRC emacs-lisp
+  ;; Add haskell mode for purescript
+  (add-to-list 'auto-mode-alist '("\\.purs\\'" . haskell-mode))
+#+END_SRC
+
+
+* Packages
+
+** Yasnippet
+
+#+BEGIN_SRC emacs-lisp
+  ;; Collection of snippets
+
+  (use-package yasnippet
+    :config
+    (setq yas-snippet-dirs '("~/.emacs.d/personal/snippets"))
+    (yas-global-mode 1))
+
+  (use-package yasnippet-snippets
+    :ensure t
+    :config
+    (setq yas-snippet-dirs
+          '("~/.emacs.d/personal/default-snippets"
+            yasnippet-snippets-dir))
+    (yas-reload-all))
+#+END_SRC
+
+
+** SBT Mode
+
+#+BEGIN_SRC emacs-lisp
+(use-package sbt-mode
+  :commands sbt-start sbt-command
+  :config
+  ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
+  ;; allows using SPACE when in the minibuffer
+  (substitute-key-definition
+   'minibuffer-complete-word
+   'self-insert-command
+   minibuffer-local-completion-map)
+  ;; sbt-supershell kills sbt-mode:  https://github.com/hvesalai/emacs-sbt-mode/issues/152
+  (setq sbt:program-options '("-Dsbt.supershell=false"))
+  )
+#+END_SRC
+
+** Idle Highlight
+
+Highlight the word you are on in case you stop there for some time
+
+#+begin_src emacs-lisp
+  (use-package idle-highlight-mode
+    :ensure t
+    :diminish idle-highlight-mode
+    :config
+    (add-hook 'prog-mode-hook 'idle-highlight-mode)
+    )
+#+end_src
+
+
+* Functions
+
+* Keybindings
