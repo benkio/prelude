@@ -33,14 +33,6 @@ Contains the custom configuration for Prelude after proloading
   (set-face-attribute 'mode-line nil :background "6600CC")
 #+end_src
 
-** Purescript
-
-#+BEGIN_SRC emacs-lisp
-  ;; Add haskell mode for purescript
-  (add-to-list 'auto-mode-alist '("\\.purs\\'" . haskell-mode))
-#+END_SRC
-
-
 * Packages
 
 ** Yasnippet
@@ -105,6 +97,19 @@ Highlight the word you are on in case you stop there for some time
         (ignore-errors
           (treesit-install-language-grammar 'nix)))))
 #+end_src
+** Purescript
+
+#+BEGIN_SRC emacs-lisp
+  (use-package purescript-mode
+    :ensure t
+    :mode "\\.purs\\'"
+    :config
+    (defun myhook-purescript-mode ()
+      (turn-on-purescript-indentation)
+      (add-hook 'before-save-hook #'purescript-sort-imports nil t))
+    (add-hook 'purescript-mode-hook #'myhook-purescript-mode))
+#+END_SRC
+
 * Functions
 
 * Keybindings
