@@ -7,18 +7,19 @@
 Contains the custom configuration for Prelude after proloading
 
 * Setup
+** use-package
+
+#+begin_src emacs-lisp
+  (setq use-package-always-ensure t)
+#+end_src
+
 ** Disable
 
 1. Remove initial scratch buffer message
-
+2. disable super keybindings
 #+begin_src emacs-lisp
   ;; Remove initial scratch buffer message
   (setq initial-scratch-message "")
-#+end_src
-
-** Prelude Specific
-
-#+begin_src emacs-lisp
   ;; disable super keybindings
   (setq prelude-super-keybindings nil)
 #+end_src
@@ -29,12 +30,10 @@ Contains the custom configuration for Prelude after proloading
   ;; Brighter region background, line number, hidle and background of buffer line
   (set-face-attribute 'region nil :background "0000FF")
   (set-face-attribute 'line-number-current-line nil :background "0000FF")
-  (set-face-attribute 'idle-highlight nil :background "DarkOrange3")
   (set-face-attribute 'mode-line nil :background "6600CC")
 #+end_src
 
 * Packages
-
 ** Yasnippet
 
 #+BEGIN_SRC emacs-lisp
@@ -43,17 +42,16 @@ Contains the custom configuration for Prelude after proloading
   (use-package yasnippet
     :config
     (setq yas-snippet-dirs '("~/.emacs.d/personal/snippets"))
-    (yas-global-mode 1))
+    )
+  (yas-global-mode 1)
 
   (use-package yasnippet-snippets
-    :ensure t
     :config
     (setq yas-snippet-dirs
           '("~/.emacs.d/personal/default-snippets"
             yasnippet-snippets-dir))
     (yas-reload-all))
 #+END_SRC
-
 
 ** SBT Mode
 
@@ -72,24 +70,20 @@ Contains the custom configuration for Prelude after proloading
   )
 #+END_SRC
 
-** Idle Highlight
+** Highlight Symbol
 
 Highlight the word you are on in case you stop there for some time
 
 #+begin_src emacs-lisp
-  (use-package idle-highlight-mode
-    :ensure t
-    :diminish idle-highlight-mode
-    :config
-    (add-hook 'prog-mode-hook 'idle-highlight-mode)
-    )
+(use-package highlight-symbol
+  :init
+  (add-hook 'prog-mode-hook 'highlight-symbol-mode))
 #+end_src
 
-** Nix-ts-mode
+*** Nix-ts-mode
 
 #+begin_src emacs-lisp
   (use-package nix-ts-mode
-    :ensure t
     :mode "\\.nix\\'"
     :config
     (with-eval-after-load 'treesit
@@ -97,11 +91,10 @@ Highlight the word you are on in case you stop there for some time
         (ignore-errors
           (treesit-install-language-grammar 'nix)))))
 #+end_src
-** Purescript
+*** Purescript
 
 #+BEGIN_SRC emacs-lisp
   (use-package purescript-mode
-    :ensure t
     :mode "\\.purs\\'"
     :config
     (defun myhook-purescript-mode ()
@@ -109,14 +102,19 @@ Highlight the word you are on in case you stop there for some time
       (add-hook 'before-save-hook #'purescript-sort-imports nil t))
     (add-hook 'purescript-mode-hook #'myhook-purescript-mode))
 #+END_SRC
-** Iedit
+*** Iedit
 
 Editing mulitiple occurrences of the same highlighted word at once.
 
 #+begin_src emacs-lisp
-  (use-package iedit
-    :ensure t
-    )
+  (use-package iedit)
+#+end_src
+** Ripgrep
+
+Fast search, grep alternative
+
+#+begin_src emacs-lisp
+  (use-package rg)
 #+end_src
 * Functions
 
