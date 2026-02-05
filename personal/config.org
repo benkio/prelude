@@ -109,7 +109,15 @@ Highlight the word you are on in case you stop there for some time
       (add-hook 'before-save-hook #'purescript-sort-imports nil t))
     (add-hook 'purescript-mode-hook #'myhook-purescript-mode))
 #+END_SRC
+** Iedit
 
+Editing mulitiple occurrences of the same highlighted word at once.
+
+#+begin_src emacs-lisp
+  (use-package iedit
+    :ensure t
+    )
+#+end_src
 * Functions
 
 * Keybindings
