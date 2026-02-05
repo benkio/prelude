@@ -93,7 +93,18 @@ Highlight the word you are on in case you stop there for some time
     )
 #+end_src
 
+** Nix-ts-mode
 
+#+begin_src emacs-lisp
+  (use-package nix-ts-mode
+    :ensure t
+    :mode "\\.nix\\'"
+    :config
+    (with-eval-after-load 'treesit
+      (unless (treesit-language-available-p 'nix)
+        (ignore-errors
+          (treesit-install-language-grammar 'nix)))))
+#+end_src
 * Functions
 
 * Keybindings
