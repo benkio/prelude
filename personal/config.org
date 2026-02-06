@@ -22,12 +22,63 @@ Contains the custom configuration for Prelude after proloading
 ** Disable
 
 1. Remove initial scratch buffer message
-2. disable super keybindings
+2. Disable super keybindings
+3. Remove menu bar
+3. Remove tool bar
+3. Remove scroll bar
+
 #+begin_src emacs-lisp
   ;; Remove initial scratch buffer message
   (setq initial-scratch-message "")
   ;; disable super keybindings
   (setq prelude-super-keybindings nil)
+  (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
+  (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
+  (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
+#+end_src
+
+** Set
+
+- Fontsize
+- ~org-agenda~ task files
+- ~org-capture~ default file and template
+- When you delete files they got into the thrash instead of permanently deleted
+- Exporting Org headlines
+- Add Electric Pairs brackets
+- Dired displaying ls
+#+begin_src emacs-lisp
+  ;; Source - https://stackoverflow.com/a/296316
+  (set-face-attribute 'default nil :height 160)
+  (setq org-agenda-files '("~/Dropbox/notes/TODO.org"))
+  (setq org-default-notes-file "~/Dropbox/notes/TODO.org")
+  (setq org-capture-templates
+        '(("t" "Todo" entry (file+headline "~/Dropbox/notes/TODO.org" "TODOs")
+           "* TODO %?\n  %i\n")
+          ("d" "Download" entry (file+headline "~/Dropbox/notes/TVShows.org" "TV Shows" "Backlog")
+           "* %?\n  %i\n")
+          ("g" "Gigs" entry (file+headline "~/Dropbox/notes/Events.org" "Events")
+           "* %?\n   SCHEDULED: \n %i\n")
+          ))
+  (setq delete-by-moving-to-trash t)
+
+  (setq org-export-headline-levels 6) ;; Exporting headlines goes till h6 instead of stopping to h4 and then li
+  ;; make electric-pair-mode work on more brackets
+  (setq electric-pair-pairs
+        '(
+          (?\' . ?\')
+          (?\` . ?\`)))
+  (defvar org-electric-pairs '(
+                               (?/ . ?/)
+                               (?_ . ?_)
+                               (?~ . ?~)
+                               (?+ . ?+)
+                               (?= . ?=)) "Electric pairs for org-mode.")
+  (defun org-add-electric-pairs ()
+    (setq-local electric-pair-pairs (append electric-pair-pairs org-electric-pairs))
+    (setq-local electric-pair-text-pairs electric-pair-pairs))
+
+  (add-hook 'org-mode-hook 'org-add-electric-pairs)
+  (setq dired-listing-switches "-alh")
 #+end_src
 
 ** Theme
@@ -40,7 +91,8 @@ Contains the custom configuration for Prelude after proloading
 #+end_src
 
 * Packages
-** Yasnippet
+** General
+*** Yasnippet
 
 #+BEGIN_SRC emacs-lisp
   ;; Collection of snippets
@@ -59,7 +111,105 @@ Contains the custom configuration for Prelude after proloading
     (yas-reload-all))
 #+END_SRC
 
-** SBT Mode
+** Visual
+*** Highlight Symbol
+
+Highlight the word you are on in case you stop there for some time
+
+#+begin_src emacs-lisp
+(use-package highlight-symbol
+  :init
+  (add-hook 'prog-mode-hook 'highlight-symbol-mode))
+#+end_src
+
+*** Indent Guide
+
+Used to highlight different indentation levels.
+Useful in languages like ML, haskell, elm, scala 3..
+
+#+begin_src emacs-lisp
+  (use-package indent-guide
+    :config (indent-guide-global-mode))
+#+end_src
+** Text Maniputanion
+*** Iedit
+
+Editing mulitiple occurrences of the same highlighted word at once.
+
+#+begin_src emacs-lisp
+  (use-package iedit)
+#+end_src
+*** format-all
+
+Package that will format your code based on extenal programs and the mode/language you are in
+
+#+begin_src emacs-lisp
+  (use-package format-all
+    :commands format-all-mode
+    :config
+    (setq-default format-all-formatters '(
+                                          ("Haskell" fourmolu)
+                                          ("Scala" scalafmt)
+                                          ))
+    )
+#+end_src
+*** String Inflection
+
+Package to cycle and change between different cases: camel, underscore, lower...
+
+#+begin_src emacs-lisp
+  (use-package string-inflection)
+#+end_src
+** Development
+*** Languages/Buffers
+**** Smithy
+#+begin_src emacs-lisp
+  (use-package smithy-mode)
+#+end_src
+**** Purescript
+
+#+BEGIN_SRC emacs-lisp
+  (use-package purescript-mode
+    :mode "\\.purs\\'"
+    :config
+    (defun myhook-purescript-mode ()
+      (turn-on-purescript-indentation)
+      (add-hook 'before-save-hook #'purescript-sort-imports nil t))
+    (add-hook 'purescript-mode-hook #'myhook-purescript-mode))
+#+END_SRC
+**** CSV
+
+Mode to handle CSV files
+
+#+begin_src emacs-lisp
+  (use-package csv-mode)
+#+end_src
+**** Elm
+
+#+begin_src emacs-lisp
+  (use-package elm-mode)
+#+end_src
+**** GraphQl
+
+Add ~graphql-mode~
+
+#+begin_src emacs-lisp
+  (use-package graphql-mode)
+#+end_src
+
+**** Nix-ts-mode
+
+#+begin_src emacs-lisp
+  (use-package nix-ts-mode
+    :mode "\\.nix\\'"
+    :config
+    (with-eval-after-load 'treesit
+      (unless (treesit-language-available-p 'nix)
+        (ignore-errors
+          (treesit-install-language-grammar 'nix)))))
+#+end_src
+*** Tools
+**** Sbt Mode
 
 #+BEGIN_SRC emacs-lisp
 (use-package sbt-mode
@@ -76,52 +226,29 @@ Contains the custom configuration for Prelude after proloading
   )
 #+END_SRC
 
-** Highlight Symbol
+**** Verb HTTP Client
 
-Highlight the word you are on in case you stop there for some time
-
-#+begin_src emacs-lisp
-(use-package highlight-symbol
-  :init
-  (add-hook 'prog-mode-hook 'highlight-symbol-mode))
-#+end_src
-
-*** Nix-ts-mode
+An Http client for org mode
 
 #+begin_src emacs-lisp
-  (use-package nix-ts-mode
-    :mode "\\.nix\\'"
-    :config
-    (with-eval-after-load 'treesit
-      (unless (treesit-language-available-p 'nix)
-        (ignore-errors
-          (treesit-install-language-grammar 'nix)))))
+  (use-package org
+    :mode ("\\.org\\'" . org-mode))
 #+end_src
-*** Purescript
 
-#+BEGIN_SRC emacs-lisp
-  (use-package purescript-mode
-    :mode "\\.purs\\'"
-    :config
-    (defun myhook-purescript-mode ()
-      (turn-on-purescript-indentation)
-      (add-hook 'before-save-hook #'purescript-sort-imports nil t))
-    (add-hook 'purescript-mode-hook #'myhook-purescript-mode))
-#+END_SRC
-*** Iedit
+**** Simple Httpd
 
-Editing mulitiple occurrences of the same highlighted word at once.
+Quickly spawn a server at point. Serving current dir
 
 #+begin_src emacs-lisp
-  (use-package iedit)
+  (use-package simple-httpd)
 #+end_src
-** Ripgrep
 
-Fast search, grep alternative
+**** Lorem Ipsum
 
 #+begin_src emacs-lisp
-  (use-package rg)
+  (use-package lorem-ipsum)
 #+end_src
+
 * Functions
 
 * Keybindings
