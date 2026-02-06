@@ -7,10 +7,16 @@
 Contains the custom configuration for Prelude after proloading
 
 * Setup
-** use-package
+** Enable
+
+1. use-package ensure t
+2. abbrev mode always on and load personal abbrevs globally
 
 #+begin_src emacs-lisp
   (setq use-package-always-ensure t)
+  (setq-default abbrev-mode t)
+  ;; Load personal abbrev table and make it available in all buffers
+  (load-file (expand-file-name "personal/abbrev_defs" user-emacs-directory))
 #+end_src
 
 ** Disable
