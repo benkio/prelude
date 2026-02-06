@@ -47,15 +47,15 @@ Contains the custom configuration for Prelude after proloading
 
   (use-package yasnippet
     :config
-    (setq yas-snippet-dirs '("~/.emacs.d/personal/snippets"))
+    (setq yas-snippet-dirs (append yas-snippet-dirs
+                               '("~/.emacs.d/personal/snippets")))
     )
   (yas-global-mode 1)
 
   (use-package yasnippet-snippets
     :config
-    (setq yas-snippet-dirs
-          '("~/.emacs.d/personal/default-snippets"
-            yasnippet-snippets-dir))
+    (setq yas-snippet-dirs (append yas-snippet-dirs
+                                   (list yasnippet-snippets-dir)))
     (yas-reload-all))
 #+END_SRC
 
