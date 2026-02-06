@@ -176,6 +176,8 @@ Package to cycle and change between different cases: camel, underscore, lower...
       (turn-on-purescript-indentation)
       (add-hook 'before-save-hook #'purescript-sort-imports nil t))
     (add-hook 'purescript-mode-hook #'myhook-purescript-mode))
+
+  (use-package psc-ide)
 #+END_SRC
 **** CSV
 
