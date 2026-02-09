@@ -1,5 +1,0 @@
-# Author: benkio <benkio89@gmail.com>
-# name: val s = Set[K](..)
-# key: set
-# --
-val ${1:s} = Set[${2:key}]($0)

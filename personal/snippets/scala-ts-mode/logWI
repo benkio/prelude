@@ -1,5 +1,0 @@
-# Author: Benkio
-# name: LogWriter[F].info(s..)
-# key: logwi
-# --
-${1:LogWriter}.info(s"[${1:`(nth 0 (s-slice-at "[.]"(buffer-name)))`}] $0")

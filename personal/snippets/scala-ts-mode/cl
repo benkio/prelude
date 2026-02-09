@@ -1,7 +1,0 @@
-# Author: Jonas Bonèr <jonas@jonasboner.com>
-# name: class T(args) { .. }
-# key: cl
-# --
-${1:$$(when (and yas-moving-away-p (not (string= "" yas-text))) (concat yas-text " "))}class ${2:name}(${3:args}) {
-  $0
-}

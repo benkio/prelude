@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: instant Now
-# key: instantnow
-# --
-Instant.now()

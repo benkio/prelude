@@ -1,6 +1,0 @@
-# -*- mode: snippet -*-
-# name: extension method
-# key: extmet
-# --
-extension (x: $1)
-  def $2: $3 = $0

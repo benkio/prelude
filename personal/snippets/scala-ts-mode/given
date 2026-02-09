@@ -1,7 +1,0 @@
-# -*- mode: snippet -*-
-# name: given instance
-# key: given
-# --
-given $1: $2 with
-  def $3 =
-    $0

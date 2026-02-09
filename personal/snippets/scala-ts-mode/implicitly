@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: implicitly
-# key: impli
-# --
-val implicitValue$1 = implicitly[$2]$0
