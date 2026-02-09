@@ -1,0 +1,5 @@
+# Author: Jonas Bonèr <jonas@jonasboner.com>
+# name: throw new RuntimeException
+# key: throw
+# --
+throw new ${1:RuntimeException}("${2:msg}") $0

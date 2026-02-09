@@ -1,0 +1,774 @@
+(setq use-package-always-ensure t)
+(setq-default abbrev-mode t)
+;; Load personal abbrev table and make it available in all buffers
+(load-file (expand-file-name "personal/abbrev_defs" user-emacs-directory))
+
+;; Remove initial scratch buffer message
+(setq initial-scratch-message "")
+;; disable super keybindings
+(setq prelude-super-keybindings nil)
+(if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
+(if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
+(if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
+
+;; Source - https://stackoverflow.com/a/296316
+(set-face-attribute 'default nil :height 160)
+(setq org-agenda-files '("~/Dropbox/notes/TODO.org"))
+(setq org-default-notes-file "~/Dropbox/notes/TODO.org")
+(setq org-capture-templates
+      '(("t" "Todo" entry (file+headline "~/Dropbox/notes/TODO.org" "TODOs")
+         "* TODO %?\n  %i\n")
+        ("d" "Download" entry (file+headline "~/Dropbox/notes/TVShows.org" "TV Shows" "Backlog")
+         "* %?\n  %i\n")
+        ("g" "Gigs" entry (file+headline "~/Dropbox/notes/Events.org" "Events")
+         "* %?\n   SCHEDULED: \n %i\n")
+        ))
+(setq delete-by-moving-to-trash t)
+
+(setq org-export-headline-levels 6) ;; Exporting headlines goes till h6 instead of stopping to h4 and then li
+;; make electric-pair-mode work on more brackets
+(setq electric-pair-pairs
+      '(
+        (?\' . ?\')
+        (?\` . ?\`)))
+(defvar org-electric-pairs '(
+                             (?/ . ?/)
+                             (?_ . ?_)
+                             (?~ . ?~)
+                             (?+ . ?+)
+                             (?= . ?=)) "Electric pairs for org-mode.")
+(defun org-add-electric-pairs ()
+  (setq-local electric-pair-pairs (append electric-pair-pairs org-electric-pairs))
+  (setq-local electric-pair-text-pairs electric-pair-pairs))
+
+(add-hook 'org-mode-hook 'org-add-electric-pairs)
+(setq dired-listing-switches "-alh")
+
+;; Brighter region background, line number, hidle and background of buffer line
+(set-face-attribute 'region nil :background "0000FF")
+(set-face-attribute 'line-number-current-line nil :background "0000FF")
+(set-face-attribute 'mode-line nil :background "6600CC")
+
+;; Collection of snippets
+
+(use-package yasnippet
+  :config
+  (setq yas-snippet-dirs (append yas-snippet-dirs
+                             '("~/.emacs.d/personal/snippets")))
+  )
+(yas-global-mode 1)
+
+(use-package yasnippet-snippets
+  :config
+  (setq yas-snippet-dirs (append yas-snippet-dirs
+                                 (list yasnippet-snippets-dir)))
+  (yas-reload-all))
+
+(use-package highlight-symbol
+  :init
+  (add-hook 'prog-mode-hook 'highlight-symbol-mode))
+
+(use-package indent-guide
+  :config (indent-guide-global-mode))
+
+(use-package iedit)
+
+(use-package format-all
+  :commands format-all-mode
+  :config
+  (setq-default format-all-formatters '(
+                                        ("Haskell" fourmolu)
+                                        ("Scala" scalafmt)
+                                        ))
+  )
+
+(use-package string-inflection)
+
+(use-package lsp-metals
+  :ensure t
+  :custom
+  ;; You might set metals server options via -J arguments. This might not always work, for instance when
+  ;; metals is installed using nix. In this case you can use JAVA_TOOL_OPTIONS environment variable.
+  (lsp-metals-server-args '(;; Metals claims to support range formatting by default but it supports range
+                            ;; formatting of multiline strings only. You might want to disable it so that
+                            ;; emacs can use indentation provided by scala-mode.
+                            "-J-Dmetals.allow-multiline-string-formatting=off"
+                            ;; Enable unicode icons. But be warned that emacs might not render unicode
+                            ;; correctly in all cases.
+                            "-J-Dmetals.icons=unicode"))
+  ;; In case you want semantic highlighting. This also has to be enabled in lsp-mode using
+  ;; `lsp-semantic-tokens-enable' variable. Also you might want to disable highlighting of modifiers
+  ;; setting `lsp-semantic-tokens-apply-modifiers' to `nil' because metals sends `abstract' modifier
+  ;; which is mapped to `keyword' face.
+  (lsp-metals-enable-semantic-highlighting t)
+  :hook (scala-mode . lsp))
+
+(use-package smithy-mode)
+
+(use-package purescript-mode
+  :mode "\\.purs\\'"
+  :config
+  (defun myhook-purescript-mode ()
+    (turn-on-purescript-indentation)
+    (add-hook 'before-save-hook #'purescript-sort-imports nil t))
+  (add-hook 'purescript-mode-hook #'myhook-purescript-mode))
+
+(use-package psc-ide)
+
+(use-package csv-mode)
+
+(use-package elm-mode)
+
+(use-package graphql-mode)
+
+(use-package nix-ts-mode
+  :mode "\\.nix\\'"
+  :config
+  (with-eval-after-load 'treesit
+    (unless (treesit-language-available-p 'nix)
+      (ignore-errors
+        (treesit-install-language-grammar 'nix)))))
+
+(use-package mermaid-mode)
+
+(use-package sbt-mode
+  :commands sbt-start sbt-command
+  :config
+  ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
+  ;; allows using SPACE when in the minibuffer
+  (substitute-key-definition
+   'minibuffer-complete-word
+   'self-insert-command
+   minibuffer-local-completion-map)
+  ;; sbt-supershell kills sbt-mode:  https://github.com/hvesalai/emacs-sbt-mode/issues/152
+  (setq sbt:program-options '("-Dsbt.supershell=false"))
+  )
+
+(use-package org
+  :mode ("\\.org\\'" . org-mode))
+
+(use-package simple-httpd)
+
+(use-package lorem-ipsum)
+
+(use-package org-contrib)
+(require 'ox-extra) ;; the package I wanted to include in my config
+;; and a function to activate the features of this package:
+(ox-extras-activate '(latex-header-blocks ignore-headlines))
+
+(use-package htmlize)
+
+(use-package ox-gfm
+  :defer t
+  :config
+  (require 'ox-gfm nil t))
+
+(use-package ox-reveal
+  :defer t
+  :config
+  (require 'ox-reveal)
+  (setq org-reveal-root "https://cdn.jsdelivr.net/npm/reveal.js@4.1.0")
+  (setq org-reveal-mathjax t))
+
+(use-package ox-jira)
+
+(use-package rg)
+
+(use-package google-this)
+
+(defun yt-dlp (youtubeUrl destinationPath outputFormat)
+  "Function that use yt-dlp to download the video and convert it to the specified output format"
+  (interactive
+   (list
+    (read-string "Youtube URL: ")
+    (read-directory-name "Destination directory: ")
+    (read-string "Output format\n(mp4|flv|ogg|webm|mkv|avi-best|aac|flac|mp3|m4a|opus|vorbis|wav): ")
+    )
+   )
+  (condition-case err
+      (progn
+        (unless (command-exists-p "yt-dlp")
+          (error "Please install yt-dlp"))
+        (unless (file-directory-p destinationPath)
+          (error "Destination directory does not exist: %s" destinationPath))
+        (let ((supportedAudioFormats (list "best" "aac" "flac" "mp3" "m4a" "opus" "vorbis" "wav"))
+              (supportedVideoFormats (list "mp4" "flv" "ogg" "webm" "mkv" "avi"))
+              (youtubeDlPCommand))
+          (cond
+           ((member outputFormat supportedAudioFormats)
+            (setq youtubeDlPCommand (format "yt-dlp -x --audio-format %s -o '%s%%(title)s-%%(id)s.%%(ext)s' %s" outputFormat destinationPath youtubeUrl)))
+           ((member outputFormat supportedVideoFormats)
+            (setq youtubeDlPCommand (format "yt-dlp --recode-video %s -o '%s%%(title)s-%%(id)s.%%(ext)s' %s" outputFormat destinationPath youtubeUrl)))
+           (t (error "Please insert a valid output format: %s" outputFormat)))
+          (async-shell-command youtubeDlPCommand)))
+    (error (message "Error in yt-dlp: %s" err))))
+
+(defun download-urls-or-region (&optional opt-urls)
+  "Select a region containing aria2c inputs. This will call aria2c asynchronously and dowload them in the current dir or in the specified one. if the region is empty it will ask for urls one by one"
+  (interactive)
+  (condition-case err
+      (progn
+        ;; Requirements check: aria2c
+        (unless (command-exists-p "aria2c")
+          (error "Please install aria2"))
+        ;; Input validation
+        (let ((urls (or opt-urls
+                        (when (use-region-p)
+                          (replace-regexp-in-string "\n" " " (buffer-substring-no-properties (region-beginning) (region-end)))))))
+          (when (equal urls nil)
+            (while (yes-or-no-p "Another aria2 input? ")
+              (setq urls (concat urls " " (read-string "Next aria2 input: ")))))
+          (let ((directory (expand-file-name (read-directory-name "Select output directory: "))))
+            (unless (file-directory-p directory)
+              (error "Directory does not exist: %s" directory))
+            (let* ((urls-quoted (mapconcat (lambda (s) (concat "\"" s "\"")) (split-string (s-trim urls)) " "))
+                  (aria2Command (concat "aria2c -V --seed-ratio=0.0 --seed-time=144000 -d \"" directory "\" -Z " urls-quoted)))
+              (message "Running: %s" aria2Command)
+              (async-shell-command aria2Command)))))
+    (error (message "Error in download-urls-or-region: %s" err))))
+
+(defun insert-current-date-iso-8601 ()
+  "Call the `date' unix command to insert the current date"
+  (interactive)
+  (if (command-exists-p "ffplay")
+      (insert (s-trim (shell-command-to-string "date -u +\"%Y-%m-%dT%H:%M:%SZ\"")))
+    (error "Please install ffplay (ffmpeg)"))
+  )
+
+(defun dev-open-doc (queryType &optional lib)
+  "Open the dev doc page in browser searching for the input queryType"
+  (interactive (list
+                (read-string (format "type (%s): " (thing-at-point 'word))
+                             nil nil (thing-at-point 'word))
+                (completing-read "Library: "
+                                 '("all" "angular" "backbone" "cpp" "coffeescript" "crystal" "elixir" "golang" "javascript" "julia" "jquery" "knockout" "kubernetes" "less" "lodash" "love" "marionette" "markdown" "matplotlib" "modernizr" "moment" "openjdk" "nginx" "node" "numpy" "pandas" "postgresql" "python" "rails" "ruby" "rust" "scala" "sass" "tensorflow" "typescript" "underscore.js") nil nil)
+                ))
+  (require 'browse-url)
+  (kill-new (if (s-blank? queryType) (thing-at-point 'word t) queryType))
+  (setq libUrlPrefix (cond
+                      ((string= lib "angular")       "https://devdocs.io/#q=ng "   )
+                      ((string= lib "backbone")      "https://devdocs.io/#q=bb "   )
+                      ((string= lib "cpp")           "https://devdocs.io/#q=c++ "  )
+                      ((string= lib "coffeescript")  "https://devdocs.io/#q=cs "   )
+                      ((string= lib "crystal")       "https://devdocs.io/#q=cr "   )
+                      ((string= lib "elixir")        "https://devdocs.io/#q=ex "   )
+                      ((string= lib "golang")        "https://devdocs.io/#q=go "   )
+                      ((string= lib "javascript")    "https://devdocs.io/#q=js "   )
+                      ((string= lib "julia")         "https://devdocs.io/#q=jl "   )
+                      ((string= lib "jquery")        "https://devdocs.io/#q=$ "    )
+                      ((string= lib "knockout")      "https://devdocs.io/#q=ko "   )
+                      ((string= lib "kubernetes")    "https://devdocs.io/#q=k8s "  )
+                      ((string= lib "less")          "https://devdocs.io/#q=ls "   )
+                      ((string= lib "lodash")        "https://devdocs.io/#q=_ "    )
+                      ((string= lib "love")          "https://devdocs.io/#q=löve " )
+                      ((string= lib "marionette")    "https://devdocs.io/#q=mn "   )
+                      ((string= lib "markdown")      "https://devdocs.io/#q=md "   )
+                      ((string= lib "matplotlib")    "https://devdocs.io/#q=mpl "  )
+                      ((string= lib "modernizr")     "https://devdocs.io/#q=mdr "  )
+                      ((string= lib "moment")        "https://devdocs.io/#q=mt "   )
+                      ((string= lib "openjdk")       "https://devdocs.io/#q=java " )
+                      ((string= lib "nginx")         "https://devdocs.io/#q=ngx "  )
+                      ((string= lib "node" )         "https://devdocs.io/#q=node " )
+                      ((string= lib "numpy")         "https://devdocs.io/#q=np "   )
+                      ((string= lib "pandas")        "https://devdocs.io/#q=pd "   )
+                      ((string= lib "postgresql")    "https://devdocs.io/#q=pg "   )
+                      ((string= lib "python")        "https://devdocs.io/#q=py "   )
+                      ((string= lib "rails")         "https://devdocs.io/#q=ror "  )
+                      ((string= lib "ruby")          "https://devdocs.io/#q=rb "   )
+                      ((string= lib "rust")          "https://devdocs.io/#q=rs "   )
+                      ((string= lib "scala")         "https://devdocs.io/#q=scala " )
+                      ((string= lib "sass")          "https://devdocs.io/#q=scss " )
+                      ((string= lib "tensorflow")    "https://devdocs.io/#q=tf "   )
+                      ((string= lib "typescript")    "https://devdocs.io/#q=ts "   )
+                      ((string= lib "underscore.js") "https://devdocs.io/#q=_ "    )
+                      (t                             "https://devdocs.io/#q="      )
+                      ))
+  (browse-url (concat libUrlPrefix queryType))
+  )
+
+(defun scala-open-doc (queryType lib)
+  "Open the scala doc in browser searching for the input queryType"
+  (interactive (list
+                (read-string (format "type (%s): " (thing-at-point 'word))
+                             nil nil (thing-at-point 'word))
+                (completing-read "Library: "
+                                 '("Cats" "Cats-Effect" "Circe" "Doobie" "Http4s" "Monocle" "Munit" "Natchez" "Scalacheck" "Skunk" "Smithy4s" "Spark" "Standard Library" "Feral" "Fs2" "Weaver") nil t)
+                ))
+  (require 'browse-url)
+  (kill-new (if (s-blank? queryType) (thing-at-point 'word t) queryType))
+  (setq libUrlPrefix (cond
+                      ((string= lib "Cats")        "https://typelevel.org/cats/api/cats/index.html?search=")
+                      ((string= lib "Cats-Effect") "https://javadoc.io/doc/org.typelevel/cats-effect_3/latest/index.html?search=")
+                      ((string= lib "Circe")       "https://circe.github.io/circe/api/index.html?search=")
+                      ((string= lib "Doobie")      "https://javadoc.io/doc/org.tpolecat/doobie-core_3/latest/index.html")
+                      ((string= lib "Http4s")      "https://www.javadoc.io/doc/org.http4s/http4s-docs_2.13/latest/index.html?search=")
+                      ((string= lib "Monocle")     "https://javadoc.io/doc/com.github.julien-truffaut/monocle-core_3.0.0-RC3/latest/api/monocle/Monocle$.html")
+                      ((string= lib "Munit")       "https://www.javadoc.io/doc/org.scalameta/munit_3/latest/index.html")
+                      ((string= lib "Natchez")     "https://www.javadoc.io/doc/org.tpolecat/natchez-core_2.13/latest/index.html?search=")
+                      ((string= lib "Scalacheck")  "https://javadoc.io/doc/org.scalacheck/scalacheck_3/latest/index.html")
+                      ((string= lib "Skunk")       "https://www.javadoc.io/doc/org.tpolecat/skunk-core_3/latest/index.html")
+                      ((string= lib "Smithy4s")    "https://javadoc.io/doc/com.disneystreaming.smithy4s/smithy4s-core_3/latest/index.html")
+                      ((string= lib "Spark")       "https://spark.apache.org/docs/latest/api/scala/?search=")
+                      ((string= lib "Feral")       "https://javadoc.io/doc/org.typelevel/feral-core_3/latest/index.html?search=")
+                      ((string= lib "Fs2")         "https://www.javadoc.io/doc/co.fs2/fs2-core_3/latest/index.html?search==")
+                      ((string= lib "Weaver")      "https://www.javadoc.io/doc/com.disneystreaming/weaver-cats_3/latest/index.html")
+                      (t                           "https://www.scala-lang.org/api/current/index.html?search=")
+                      ))
+  (browse-url (concat libUrlPrefix queryType))
+  )
+
+(defun ts-open-doc (queryType lib)
+  "Open the typescript doc in browser searching for the input queryType. Uses the general dev-open-doc"
+  (interactive (list
+                (read-string (format "type (%s): " (thing-at-point 'word)))
+                (completing-read "Library: "
+                                 '("Standard Library" "Effect-ts") nil t)
+                ))
+  (require 'browse-url)
+  (kill-new (if (s-blank? queryType) (thing-at-point 'word t) queryType))
+  (setq libUrlPrefix (cond
+                      ((string= lib "Effect-ts")   "https://effect-ts.github.io/effect/?search=")
+                      (t                           "https://devdocs.io/#q=ts ")
+                      ))
+  (browse-url (concat libUrlPrefix queryType))
+  )
+
+(defun dired-do-command-interactive (command)
+  "Run COMMAND on marked files interactively. Any files not already open will be opened.
+     After this command has been run, any buffers it's modified will remain
+     open and unsaved."
+  (interactive "CRun on marked files M-x ")
+  (save-window-excursion
+    (mapc (lambda (filename)
+            (find-file filename)
+            (call-interactively command))
+          (dired-get-marked-files))))
+
+(defun dired-do-command (command)
+  "Run COMMAND on marked files. Passing each file in input of the command, called not iteractively"
+  (interactive "CRun on marked files M-x ")
+  (save-window-excursion
+    (mapc (lambda (filename)
+            (funcall command filename))
+          (dired-get-marked-files))))
+
+(defun xah-dired-sort ()
+  "Sort dired dir listing in different ways.
+     Prompt for a choice.
+     URL `http://ergoemacs.org/emacs/dired_sort.html'
+     Version 2015-07-30"
+  (interactive)
+  (let (-sort-by -arg)
+    (setq -sort-by (ido-completing-read "Sort by:" '( "date" "size" "name" "dir")))
+    (cond
+     ((equal -sort-by "name") (setq -arg "-Al --si --time-style long-iso "))
+     ((equal -sort-by "date") (setq -arg "-Al --si --time-style long-iso -t"))
+     ((equal -sort-by "size") (setq -arg "-Al --si --time-style long-iso -S"))
+     ((equal -sort-by "dir") (setq -arg "-Al --si --time-style long-iso --group-directories-first"))
+     (t (error "logic error 09535" )))
+    (dired-sort-other -arg )))
+
+(defun convert-to-mp3 ()
+  (interactive)
+  (setq files (mapcar 'expand-file-name (apply 'files-from-dired-current-directory '())))
+  (mapcar (lambda (f) (shell-command
+                       (format "ffmpeg -i \"%s\" -vn -ar 44100 -ac 2 -b:a 192k \"%s.mp3\"" f (file-name-sans-extension f)))) files)
+  )
+
+(defun copy-file-name-to-kill-ring (filename-manipulate-func)
+  "Copy the current buffer file name to the kill-ring after the application of the input function."
+  (interactive)
+  (let ((filename (if (equal major-mode 'dired-mode)
+                      default-directory
+                    (buffer-file-name))))
+    (when filename
+      (let ((changedFilename (funcall filename-manipulate-func filename)))
+        (when changedFilename
+          (kill-new changedFilename))))))
+
+(defun copy-file-name-and-path-to-kill-ring ()
+  "Copy the current buffer file name and path to kill-ring."
+  (interactive)
+  (copy-file-name-to-kill-ring 'identity))
+
+(defun copy-just-file-name-to-kill-ring ()
+  "Copy just the current buffer file name to kill-ring."
+  (interactive)
+  (copy-file-name-to-kill-ring 'file-name-nondirectory))
+
+(defun timeToSeconds (time)
+  "get as input the time in format 00:00:00 and return the total seconds"
+  (+ (string-to-number (substring time 6))
+     (*
+      (string-to-number (substring time 3 5))
+      60
+      )
+     (*
+      (string-to-number (substring time 0 2))
+      3600
+      )
+     )
+  )
+
+(defun semitone-coefficient (semitones)
+  "Calculate the frequency coefficient for a given number of SEMITONES.
+The coefficient represents the ratio of the frequency to the base frequency.
+SEMITONES should be an integer between -12 and 12."
+  (if (and (integerp semitones) (<= -12 semitones 12))
+      (let ((semitone-ratio (expt 2 (/ 1.0 12))))
+        (expt semitone-ratio semitones))
+    (error "SEMITONES must be an integer between -12 and 12")))
+
+(defun transpose-mp3 (input-file semitones output-file)
+  "Asynchronously transpose an MP3 file by a given number of SEMITONES using ffmpeg.
+Prompts interactively for INPUT-FILE, SEMITONES, and OUTPUT-FILE if called interactively.
+INPUT-FILE is the path to the original MP3 file.
+SEMITONES is the number of semitones to transpose up (positive) or down (negative).
+OUTPUT-FILE is the path to save the transposed MP3 file."
+  (interactive
+   (list
+    (read-file-name "Input MP3 file: " nil nil t nil 'file-readable-p)
+    (read-number "Semitones to transpose (e.g., 1 for up, -1 for down): ")
+    (read-file-name "Output MP3 file: " nil nil nil)))
+  (let* ((coefficient (semitone-coefficient semitones))
+         (pitch-filter (format "rubberband=pitch=%.12f" coefficient))
+         (command (format "ffmpeg -i \"%s\" -filter:a \"%s\" -acodec libmp3lame \"%s\""
+                          (concat (expand-file-name (file-name-directory input-file)) (file-name-nondirectory input-file))
+                          pitch-filter
+                          (concat (expand-file-name (file-name-directory output-file)) (file-name-nondirectory output-file)))))
+    (message "Running: %s" command)
+    (async-shell-command command)))
+
+
+(defun cut-media-file (origin startTime endTime newName)
+  "This function get in input:
+- The path to a specific video
+- The start time of the cut (00:00:00)
+- The end time of the cut (00:00:00)
+- The new name of the output
+Perform a ffmpeg command to cut the input and generate the new output in the same directory
+"
+  (interactive "FFile name to cut from:
+sStart Time (00:00:00):
+sEnd Time (00:00:00):
+sNew Name: ")
+
+  (setq totalSeconds (- (timeToSeconds endTime) (timeToSeconds startTime)))
+  (setq ffmpegCommand (concat "ffmpeg -ss " startTime " -i \"" (concat (expand-file-name (file-name-directory origin)) (file-name-nondirectory origin)) "\" -t " (number-to-string totalSeconds) " -c:v copy -c:a copy \"" (concat (expand-file-name (file-name-directory origin)) newName) "\""))
+
+  (message "ffmpegCommand: %s" ffmpegCommand)
+  (async-shell-command ffmpegCommand)
+  )
+
+(require 'seq)
+
+(defun concatenate-media-files ()
+  "Concatenate a list of files with the same encoding in the same directory"
+  (interactive)
+  (setq
+   files (apply 'files-from-dired-current-directory '()))
+  (let* ((newFile (read-string "Insert the new file name: "))
+         (concatContent (seq-drop (seq-reduce (lambda (a b) (concat a "\nfile './" (replace-regexp-in-string "'" "\'" (file-name-nondirectory b)) "'")) files "") 1))
+         (unused (write-region concatContent nil "./concatFile.txt"))
+         (outputFile (expand-file-name (concat default-directory newFile)))
+         (ffmpegCommand (concat "ffmpeg -f concat -safe 0 -i ./concatFile.txt -c copy \"" outputFile  "\"")))
+    ;; (message "concatContent: %s - outputFile: %s - ffmpegCommand: %s" concatContent outputFile ffmpegCommand)
+    (shell-command ffmpegCommand)
+    (delete-file "./concatFile.txt")
+    )
+  )
+
+(defun play-sound ()
+  "play the sound using ffplay"
+  (interactive)
+  (unless (command-exists-p "ffplay") (error "Please install ffplay (ffmpeg)"))
+  (setq files (funcall 'files-from-dired-current-directory))
+  (setq command
+        (mapconcat (lambda (file)
+                     (let ((fileComplete (expand-file-name file))
+                           (fileCompleteNoExtension (file-name-sans-extension (expand-file-name file))))
+                       (format "ffplay -nodisp -autoexit \"%s\"" fileComplete fileCompleteNoExtension)))
+                   files " && ")
+        )
+  (message "play sound command %s" command)
+  (call-process-shell-command command)
+  )
+
+(defun preview-crop-media-file (file &optional height width topX topY)
+  "Preview using ffplay the crop of a mediafile.
+   file input crop to preview@
+   height of the output rectangle. if 0 or invalid, input file height will be used
+   width of the output rectangle. if 0 or invalid, input file width will be used
+   topX cordinate of the top left corner. Default 0
+   topY cordinate of the top left corner. Default 0"
+  (interactive (list
+                (read-file-name (format "File to preview: "))
+                (read-string (format "Height (default \"in_h\"): "))
+                (read-string (format "Width (default \"in_w\"): "))
+                (read-number (format "Top Left Corner X: ") 0)
+                (read-number (format "Top Left Corner Y: ") 0)
+                ))
+  (unless (command-exists-p "ffplay") (error "Please install ffplay (ffmpeg)"))
+  (when (eq (string-to-number height) 0) (setq height "in_h"))
+  (when (eq (string-to-number width) 0) (setq width "in_w"))
+  (setq fileComplete (expand-file-name file))
+  ;; (fileCompleteNoExtension (file-name-sans-extension (expand-file-name file))))
+  (setq command (format "ffplay -i %s -vf \"crop=%s:%s:%d:%d\"" fileComplete width height topX topY))
+  (message command)
+  (call-process-shell-command command nil 0)
+  )
+
+(defun crop-media-file (file newFile &optional height width topX topY)
+  "Preview using ffplay the crop of a mediafile.
+   file to crop
+   newFile result file cropped
+   height of the output rectangle. if 0 or invalid, input file height will be used
+   width of the output rectangle. if 0 or invalid, input file width will be used
+   topX cordinate of the top left corner. Default 0
+   topY cordinate of the top left corner. Default 0"
+  (interactive (list
+                (read-file-name (format "File to crop: "))
+                (read-file-name (format "New File: "))
+                (read-string (format "Height (default \"in_h\"): "))
+                (read-string (format "Width (default \"in_w\"): "))
+                (read-number (format "Top Left Corner X: ") 0)
+                (read-number (format "Top Left Corner Y: ") 0)
+                ))
+  (unless (command-exists-p "ffmpeg") (error "FFMpeg not Found. Please install FFMpeg"))
+  (when (eq (string-to-number height) 0) (setq height "in_h"))
+  (when (eq (string-to-number width) 0) (setq width "in_w"))
+  (setq fileComplete (expand-file-name file))
+  ;;(fileCompleteNoExtension (file-name-sans-extension (expand-file-name file))))
+  (setq command (format "ffmpeg -i %s -vf \"crop=%s:%s:%d:%d\" %s" fileComplete width height topX topY newFile))
+  (message command)
+  (call-process-shell-command command nil 0)
+  )
+
+(defun resize-image (image width height)
+  "Resize an image using FFMpeg to fixed width and height"
+  (interactive "FStarting Image:
+nWidth:
+nHeight: ")
+  (unless (command-exists-p "ffmpeg") (error "FFMpeg not Found. Please install FFMpeg"))
+  (setq fileComplete (expand-file-name image))
+  ; ffmpeg -i input.jpg -vf scale=320:240 output_320x240.png
+  (setq newFileName (concat (file-name-base image) (format "_%sx%s." width height) (file-name-extension image)))
+  (setq command (format "ffmpeg -i %s -vf \"scale=%s:%s\" %s" fileComplete width height newFileName))
+  (message command)
+  (call-process-shell-command command nil 0)
+  )
+
+(defun resize-image-width (image width)
+  "Resize an image using FFMpeg to fixed width and keeping same ratio"
+  (interactive "FStarting Image:
+nWidth: ")
+  (unless (command-exists-p "ffmpeg") (error "FFMpeg not Found. Please install FFMpeg"))
+  (setq fileComplete (expand-file-name image))
+  ; ffmpeg -i input.jpg -vf scale=320:-1 output_320x240.png
+  (setq newFileName (concat (file-name-base image) (format "_%sw." width) (file-name-extension image)))
+  (setq command (format "ffmpeg -i %s -vf \"scale=%s:-1\" %s" fileComplete width newFileName))
+  (message command)
+  (call-process-shell-command command nil 0)
+  )
+
+(defun resize-image-height (image height)
+  "Resize an image using FFMpeg to fixed height and keeping same ratio"
+  (interactive "FStarting Image:
+nHeight: ")
+  (unless (command-exists-p "ffmpeg") (error "FFMpeg not Found. Please install FFMpeg"))
+  (setq fileComplete (expand-file-name image))
+  ; ffmpeg -i input.jpg -vf scale=320:-1 output_320x240.png
+  (setq newFileName (concat (file-name-base image) (format "_%sh." height) (file-name-extension image)))
+  (setq command (format "ffmpeg -i %s -vf \"scale=-1:%s\" %s" fileComplete height newFileName))
+  (message command)
+  (call-process-shell-command command nil 0)
+  )
+
+(defun apply-case-char (startcol endcol function)
+  "apply the function to the char at start position. endcol not used"
+  (move-to-column startcol t)
+  (let ((c (string (following-char))))
+    (delete-char 1)
+    (insert (funcall function c)))
+  )
+
+(defun upcase-first-region (begin end)
+  "Uppercase the first char of each line of the selected region"
+  (interactive "r")
+  (apply-on-rectangle 'apply-case-char begin end 'upcase)
+  )
+
+;; Stefan Monnier <foo at acm.org>. It is the opposite of fill-paragraph
+(defun unfill-paragraph (&optional region)
+  "Takes a multi-line paragraph and makes it into a single line of text."
+  (interactive (progn (barf-if-buffer-read-only) '(t)))
+  (let ((fill-column (point-max))
+        ;; This would override `fill-column' if it's an integer.
+        (emacs-lisp-docstring-fill-column t))
+    (fill-paragraph nil region)))
+
+;https://www.emacswiki.org/emacs/UnfillRegion
+(defun unfill-region (beg end)
+  "Unfill the region, joining text paragraphs into a single
+    logical line.  This is useful, e.g., for use with
+    `visual-line-mode'."
+  (interactive "*r")
+  (let ((fill-column (point-max)))
+    (fill-region beg end)))
+
+(defun upcase-initial-word()
+  (interactive)
+  (search-forward-regexp "[[:space:]]*")
+  (let ((bounds (bounds-of-thing-at-point 'word)))
+    (upcase-initials-region (point) (cdr bounds)))
+  (forward-word)
+  )
+
+(defun tidy-html ()
+  "Tidies the HTML content in the buffer using `tidy'"
+  (interactive)
+  (shell-command-on-region
+   ;; beginning and end of buffer
+   (point-min)
+   (point-max)
+   ;; command and parameters
+   "tidy -indent -wrap 150 -xml -utf8 -quiet"
+   ;; output buffer
+   (current-buffer)
+   ;; replace?
+   t
+   ;; name of the error buffer
+   "*Tidy Error Buffer*"
+   ;; show error buffer?
+   t))
+
+(defun get-or-create-dropbox-link (file)
+  "Given an input file in Dropbox, this functions returns the Dropbox link related to it"
+  (unless (command-exists-p "maestral") (error "Please install maestral"))
+  (setq
+   filePathInDropbox (file-relative-name file "~/Dropbox")
+   getCommand (concat "maestral sharelink list \"" filePathInDropbox "\"")
+   createCommand (concat "maestral sharelink create \"" filePathInDropbox "\"")
+   dropboxLinks (delq nil (mapcar (lambda (s) (if (s-blank? s) nil s)) (s-split "\n" (shell-command-to-string getCommand))))
+   dropboxLink (seq-filter (lambda (link)(and (s-ends-with? "dl=0" link) (s-contains? (file-name-nondirectory file) link))) dropboxLinks)
+   )
+  (if (= (length dropboxLink) 1)
+      (progn (message (format "Get Dropbox Link for %s from %d links: %s" file (length dropboxLinks) dropboxLinks))
+             (message (format "Selected link %s" (car dropboxLink)))
+             (car dropboxLink))
+    (progn
+      (message (format "Create Dropbox Link for %s from %d links: %s" file (length dropboxLinks) dropboxLinks))
+      (shell-command createCommand)
+      (setq dropboxLinksCreate (s-split "\n" (shell-command-to-string getCommand)))
+      (car dropboxLinksCreate)
+      ))
+  )
+
+(defun get-or-create-dropbox-links ()
+  "Given an input file lists in Dropbox, this function copy the Dropbox Links of them"
+  (interactive)
+  (setq links (seq-map (lambda (filename) (get-or-create-dropbox-link filename)) (dired-get-marked-files))
+        result (mapconcat 'identity links "\n")
+        )
+  (with-temp-buffer-window (make-temp-name "dropbox-link-copy-") nil nil (princ result))
+  )
+
+(defun parse-url (url)
+  "convert a git remote location as a HTTP URL"
+  (if (string-match "^http" url)
+      url
+    (replace-regexp-in-string "\\(.*\\)@\\(.*\\):\\(.*\\)\\(\\.git?\\)"
+                              "https://\\2/\\3"
+                              url)))
+(defun magit-open-repo ()
+  "open remote repo URL"
+  (interactive)
+  (let ((url (magit-get "remote" "origin" "url")))
+    (progn
+      (browse-url (parse-url url))
+      (message "opening repo %s" url))))
+
+(defun xah-insert-random-number (NUM)
+  "Insert NUM random digits.
+NUM default to 5.
+Call `universal-argument' before for different count.
+URL `http://xahlee.info/emacs/emacs/elisp_insert_random_number_string.html'
+Version 2017-05-24"
+  (interactive "P")
+  (let (($charset "1234567890" )
+        ($baseCount 10))
+    (dotimes (_ (if (numberp NUM) (abs NUM) 5 ))
+      (insert (elt $charset (random $baseCount))))))
+
+(defun xah-insert-random-hex (NUM)
+  "Insert NUM random hexadecimal digits.
+NUM default to 5.
+Call `universal-argument' before for different count.
+URL `http://xahlee.info/emacs/emacs/elisp_insert_random_number_string.html'
+Version 2017-08-03"
+  (interactive "P")
+  (let (($n (if (numberp NUM) (abs NUM) 5 )))
+    (insert (format  (concat "%0" (number-to-string $n) "x" ) (random (1- (expt 16 $n)))))))
+
+(defun xah-insert-random-string (NUM)
+  "Insert a random alphanumerics string of length 5.
+The possible chars are: A to Z, a to z, 0 to 9.
+Call `universal-argument' before for different count.
+URL `http://xahlee.info/emacs/emacs/elisp_insert_random_number_string.html'
+Version 2018-08-03"
+  (interactive "P")
+  (let* (($charset "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
+         ($baseCount (length $charset)))
+    (dotimes (_ (if (numberp NUM) (abs NUM) 5))
+      (insert (elt $charset (random $baseCount))))))
+
+(defun xah-insert-random-uuid ()
+  "Insert a UUID.
+This commands calls “uuidgen” on MacOS, Linux, and calls PowelShell on Microsoft Windows.
+URL `http://xahlee.info/emacs/emacs/elisp_generate_uuid.html'
+Version 2020-06-04"
+  (interactive)
+  (cond
+   ((string-equal system-type "windows-nt")
+    (shell-command "pwsh.exe -Command [guid]::NewGuid().toString()" t))
+   ((string-equal system-type "darwin") ; Mac
+    (shell-command "uuidgen | tr A-Z a-z | tr -d '\n'" t))
+   ((string-equal system-type "gnu/linux")
+    (shell-command "uuidgen | tr A-Z a-z | tr -d '\n'" t))
+   (t
+    ;; code here by Christopher Wellons, 2011-11-18.
+    ;; and editted Hideki Saito further to generate all valid variants for "N" in xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx format.
+    (let ((myStr (md5 (format "%s%s%s%s%s%s%s%s%s%s"
+                              (user-uid)
+                              (emacs-pid)
+                              (system-name)
+                              (user-full-name)
+                              (current-time)
+                              (emacs-uptime)
+                              (garbage-collect)
+                              (buffer-string)
+                              (random)
+                              (recent-keys)))))
+      (insert (format "%s-%s-4%s-%s%s-%s"
+                      (substring myStr 0 8)
+                      (substring myStr 8 12)
+                      (substring myStr 13 16)
+                      (format "%x" (+ 8 (random 4)))
+                      (substring myStr 17 20)
+                      (substring myStr 20 32)))))))
+
+(defun upcase-rectangle (b e)
+  "change chars in rectangle to uppercase"
+  (interactive "r")
+  (apply-on-rectangle 'apply-fun-rectangle-line b e 'upcase-region))
+
+(defun downcase-rectangle (b e)
+  "change chars in rectangle to uppercase"
+  (interactive "r")
+  (apply-on-rectangle 'apply-fun-rectangle-line b e 'downcase-region))
+
+(defun apply-fun-rectangle-line (startcol endcol function)
+  (when (= (move-to-column startcol) startcol)
+    (funcall function (point)
+             (progn (move-to-column endcol 'coerce)
+                    (point)))))

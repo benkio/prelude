@@ -1,0 +1,5 @@
+# Author: Benkio
+# name: LogWriter[F].error(s..)
+# key: logwe
+# --
+${1:LogWriter}.error(s"[${2:`(nth 0 (s-slice-at "[.]"(buffer-name)))`}] $0")
