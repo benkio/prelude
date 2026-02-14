@@ -213,6 +213,12 @@ Mode to handle CSV files
 #+begin_src emacs-lisp
   (use-package elm-mode)
 #+end_src
+**** Elisp
+
+#+begin_src emacs-lisp
+  (use-package pcsv)
+#+end_src
+
 **** GraphQl
 
 Add ~graphql-mode~
@@ -864,7 +870,7 @@ Functions based on `maestral` (`dropbox` alternative)
 #+begin_src emacs-lisp
   (defun get-or-create-dropbox-link (file)
     "Given an input file in Dropbox, this functions returns the Dropbox link related to it"
-    (unless (command-exists-p "maestral") (error "Please install maestral"))
+    (unless (executable-find "maestral") (error "Please install maestral"))
     (setq
      filePathInDropbox (file-relative-name file "~/Dropbox")
      getCommand (concat "maestral sharelink list \"" filePathInDropbox "\"")
