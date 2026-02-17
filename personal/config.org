@@ -85,9 +85,9 @@ Contains the custom configuration for Prelude after proloading
 
 #+begin_src emacs-lisp
   ;; Brighter region background, line number, hidle and background of buffer line
-  (set-face-attribute 'region nil :background "0000FF")
-  (set-face-attribute 'line-number-current-line nil :background "0000FF")
-  (set-face-attribute 'mode-line nil :background "6600CC")
+  (set-face-attribute 'region nil :background "#0000FF")
+  (set-face-attribute 'line-number-current-line nil :background "#0000FF")
+  (set-face-attribute 'mode-line nil :background "#6600CC")
 #+end_src
 
 * Packages
