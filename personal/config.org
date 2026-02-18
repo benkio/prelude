@@ -482,6 +482,22 @@ Use ~date~ unix command to insert date
                         ))
     (browse-url (concat libUrlPrefix queryType))
     )
+
+  (defun files-from-dired-current-directory ()
+    "Ask the user for a list of files from the current directory showing the files in dired"
+    (setq
+     files (if (not (null (dired-get-marked-files)))
+               (dired-get-marked-files)
+             (list (read-file-name "The initial file name: ")))
+     )
+    (message "%s" files)
+    (while (yes-or-no-p "Another file? ")
+      (progn
+        (setq files (append files (list (read-file-name "Next file name: "))))
+        )
+      )
+    files
+    )
 #+end_src
 *** Scala
 
