@@ -29,7 +29,7 @@ Contains the custom configuration for Prelude after proloading
 
 #+begin_src emacs-lisp
   ;; Remove initial scratch buffer message
-  (setq initial-scratch-message "")
+  (setq initial-scratch-message "卐")
   ;; disable super keybindings
   (setq prelude-super-keybindings nil)
   (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
