@@ -45,9 +45,9 @@
 (setq dired-listing-switches "-alh")
 
 ;; Brighter region background, line number, hidle and background of buffer line
-(set-face-attribute 'region nil :background "0000FF")
-(set-face-attribute 'line-number-current-line nil :background "0000FF")
-(set-face-attribute 'mode-line nil :background "6600CC")
+(set-face-attribute 'region nil :background "#0000FF")
+(set-face-attribute 'line-number-current-line nil :background "#0000FF")
+(set-face-attribute 'mode-line nil :background "#6600CC")
 
 ;; Collection of snippets
 
@@ -119,6 +119,8 @@
 
 (use-package elm-mode)
 
+(use-package pcsv)
+
 (use-package graphql-mode)
 
 (use-package nix-ts-mode
@@ -144,8 +146,14 @@
   (setq sbt:program-options '("-Dsbt.supershell=false"))
   )
 
+(use-package verb)
+
 (use-package org
-  :mode ("\\.org\\'" . org-mode))
+  :mode ("\\.org\\'" . org-mode)
+  :config (define-key org-mode-map (kbd "C-c C-r") verb-command-map)
+  )
+
+(use-package impostman)
 
 (use-package simple-httpd)
 
@@ -187,7 +195,7 @@
    )
   (condition-case err
       (progn
-        (unless (command-exists-p "yt-dlp")
+        (unless (executable-find "yt-dlp")
           (error "Please install yt-dlp"))
         (unless (file-directory-p destinationPath)
           (error "Destination directory does not exist: %s" destinationPath))
@@ -209,7 +217,7 @@
   (condition-case err
       (progn
         ;; Requirements check: aria2c
-        (unless (command-exists-p "aria2c")
+        (unless (executable-find "aria2c")
           (error "Please install aria2"))
         ;; Input validation
         (let ((urls (or opt-urls
@@ -230,7 +238,7 @@
 (defun insert-current-date-iso-8601 ()
   "Call the `date' unix command to insert the current date"
   (interactive)
-  (if (command-exists-p "ffplay")
+  (if (executable-find "ffplay")
       (insert (s-trim (shell-command-to-string "date -u +\"%Y-%m-%dT%H:%M:%SZ\"")))
     (error "Please install ffplay (ffmpeg)"))
   )
@@ -481,7 +489,7 @@ sNew Name: ")
 (defun play-sound ()
   "play the sound using ffplay"
   (interactive)
-  (unless (command-exists-p "ffplay") (error "Please install ffplay (ffmpeg)"))
+  (unless (executable-find "ffplay") (error "Please install ffplay (ffmpeg)"))
   (setq files (funcall 'files-from-dired-current-directory))
   (setq command
         (mapconcat (lambda (file)
@@ -508,7 +516,7 @@ sNew Name: ")
                 (read-number (format "Top Left Corner X: ") 0)
                 (read-number (format "Top Left Corner Y: ") 0)
                 ))
-  (unless (command-exists-p "ffplay") (error "Please install ffplay (ffmpeg)"))
+  (unless (executable-find "ffplay") (error "Please install ffplay (ffmpeg)"))
   (when (eq (string-to-number height) 0) (setq height "in_h"))
   (when (eq (string-to-number width) 0) (setq width "in_w"))
   (setq fileComplete (expand-file-name file))
@@ -534,7 +542,7 @@ sNew Name: ")
                 (read-number (format "Top Left Corner X: ") 0)
                 (read-number (format "Top Left Corner Y: ") 0)
                 ))
-  (unless (command-exists-p "ffmpeg") (error "FFMpeg not Found. Please install FFMpeg"))
+  (unless (executable-find "ffmpeg") (error "FFMpeg not Found. Please install FFMpeg"))
   (when (eq (string-to-number height) 0) (setq height "in_h"))
   (when (eq (string-to-number width) 0) (setq width "in_w"))
   (setq fileComplete (expand-file-name file))
@@ -549,7 +557,7 @@ sNew Name: ")
   (interactive "FStarting Image:
 nWidth:
 nHeight: ")
-  (unless (command-exists-p "ffmpeg") (error "FFMpeg not Found. Please install FFMpeg"))
+  (unless (executable-find "ffmpeg") (error "FFMpeg not Found. Please install FFMpeg"))
   (setq fileComplete (expand-file-name image))
   ; ffmpeg -i input.jpg -vf scale=320:240 output_320x240.png
   (setq newFileName (concat (file-name-base image) (format "_%sx%s." width height) (file-name-extension image)))
@@ -562,7 +570,7 @@ nHeight: ")
   "Resize an image using FFMpeg to fixed width and keeping same ratio"
   (interactive "FStarting Image:
 nWidth: ")
-  (unless (command-exists-p "ffmpeg") (error "FFMpeg not Found. Please install FFMpeg"))
+  (unless (executable-find "ffmpeg") (error "FFMpeg not Found. Please install FFMpeg"))
   (setq fileComplete (expand-file-name image))
   ; ffmpeg -i input.jpg -vf scale=320:-1 output_320x240.png
   (setq newFileName (concat (file-name-base image) (format "_%sw." width) (file-name-extension image)))
@@ -575,7 +583,7 @@ nWidth: ")
   "Resize an image using FFMpeg to fixed height and keeping same ratio"
   (interactive "FStarting Image:
 nHeight: ")
-  (unless (command-exists-p "ffmpeg") (error "FFMpeg not Found. Please install FFMpeg"))
+  (unless (executable-find "ffmpeg") (error "FFMpeg not Found. Please install FFMpeg"))
   (setq fileComplete (expand-file-name image))
   ; ffmpeg -i input.jpg -vf scale=320:-1 output_320x240.png
   (setq newFileName (concat (file-name-base image) (format "_%sh." height) (file-name-extension image)))
@@ -644,7 +652,7 @@ nHeight: ")
 
 (defun get-or-create-dropbox-link (file)
   "Given an input file in Dropbox, this functions returns the Dropbox link related to it"
-  (unless (command-exists-p "maestral") (error "Please install maestral"))
+  (unless (executable-find "maestral") (error "Please install maestral"))
   (setq
    filePathInDropbox (file-relative-name file "~/Dropbox")
    getCommand (concat "maestral sharelink list \"" filePathInDropbox "\"")
