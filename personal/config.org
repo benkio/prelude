@@ -41,16 +41,14 @@ Contains the custom configuration for Prelude after proloading
 
 ** Set
 
-- Fontsize
 - ~org-agenda~ task files
 - ~org-capture~ default file and template
 - When you delete files they got into the thrash instead of permanently deleted
 - Exporting Org headlines
 - Add Electric Pairs brackets
 - Dired displaying ls
+- Font
 #+begin_src emacs-lisp
-  ;; Source - https://stackoverflow.com/a/296316
-  (set-face-attribute 'default nil :height 160)
   (setq org-agenda-files '("~/Dropbox/notes/TODO.org"))
   (setq org-default-notes-file "~/Dropbox/notes/TODO.org")
   (setq org-capture-templates
@@ -81,6 +79,11 @@ Contains the custom configuration for Prelude after proloading
 
   (add-hook 'org-mode-hook 'org-add-electric-pairs)
   (setq dired-listing-switches "-alh")
+  (set-face-attribute 'default nil
+                    :family "Iosevka"
+                    :weight 'regular
+                    :width 'expanded
+                    :height 160)
 #+end_src
 
 ** Theme
