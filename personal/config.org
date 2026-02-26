@@ -116,6 +116,25 @@ Contains the custom configuration for Prelude after proloading
     (yas-reload-all))
 #+END_SRC
 
+*** gptel
+Interact with terminal CLI LLM in emacs
+
+#+begin_src emacs-lisp
+  (use-package gptel
+    :ensure t
+    :config
+    (setq gptel-backend
+          (gptel-make-openai "Cursor"
+            :host "localhost:3000"
+            :endpoint "/v1/chat/completions"
+            :stream t
+            :key "not-needed"   ;; Cursor doesn't require an API key
+            :models '("gpt-4o" "gpt-4.1" "gpt-3.5-turbo")))
+
+    (setq gptel-model "gpt-4o"))
+#+end_src
+
+
 ** Visual
 *** Highlight Symbol
 
