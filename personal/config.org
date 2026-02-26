@@ -117,21 +117,13 @@ Contains the custom configuration for Prelude after proloading
 #+END_SRC
 
 *** gptel
-Interact with terminal CLI LLM in emacs
+Interact with Cursor CLI (agent) from Emacs via a local proxy.
+Start the proxy first: ~node ~/.emacs.d/personal/cursor-cli-proxy.js~ (or run in background).
+
+Not native support for cursor-cli. Just installing it for now. Setup later
 
 #+begin_src emacs-lisp
-  (use-package gptel
-    :ensure t
-    :config
-    (setq gptel-backend
-          (gptel-make-openai "Cursor"
-            :host "localhost:3000"
-            :endpoint "/v1/chat/completions"
-            :stream t
-            :key "not-needed"   ;; Cursor doesn't require an API key
-            :models '("gpt-4o" "gpt-4.1" "gpt-3.5-turbo")))
-
-    (setq gptel-model "gpt-4o"))
+  (use-package gptel)
 #+end_src
 
 
