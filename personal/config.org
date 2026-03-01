@@ -250,9 +250,25 @@ Add ~graphql-mode~
     :mode "\\.nix\\'"
     :config
     (with-eval-after-load 'treesit
+      ;; Ensure Emacs can find grammars installed under ~/.emacs.d/tree-sitter/
+      (let ((treesit-dir (expand-file-name "tree-sitter" user-emacs-directory)))
+        (unless (file-directory-p treesit-dir)
+          (make-directory treesit-dir t))
+        (add-to-list 'treesit-extra-load-path treesit-dir))
+
+      ;; Tell Emacs where to fetch the Nix grammar from.
+      (add-to-list 'treesit-language-source-alist
+                   '(nix . ("https://github.com/nix-community/tree-sitter-nix")))
+
+      ;; Auto-install the grammar if it’s missing (but don’t hard-error on startup).
       (unless (treesit-language-available-p 'nix)
-        (ignore-errors
-          (treesit-install-language-grammar 'nix)))))
+        (condition-case err
+            (treesit-install-language-grammar 'nix)
+          (error
+           (message "treesit: failed installing nix grammar: %s" err)))))
+
+    ;; If some package selects `nix-mode`, prefer the tree-sitter mode.
+    (add-to-list 'major-mode-remap-alist '(nix-mode . nix-ts-mode)))
 #+end_src
 **** Mermaid
 
