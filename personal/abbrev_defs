@@ -734,6 +734,7 @@
     ("hamburger0" "🍔" nil :count 0)
     ("hammer0" "🔨" nil :count 0)
     ("hammerandpick0" "⚒️" nil :count 0)
+    ("hammerandsickle0" "☭" nil :count 0)
     ("hammerandwrench0" "🛠️" nil :count 0)
     ("hamster0" "🐹" nil :count 0)
     ("hand0" "✋" nil :count 0)
