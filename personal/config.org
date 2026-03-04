@@ -126,6 +126,27 @@ Not native support for cursor-cli. Just installing it for now. Setup later
   (use-package gptel)
 #+end_src
 
+*** dired
+
+In particular it enables ~dired-x~ and ~dired-omit-mode~
+
+#+begin_src emacs-lisp
+  (use-package dired
+    :ensure nil
+    :init
+    (require 'dired-x) ;; I think this is required for dired-omit-mode
+
+    ;; :bind
+    ;; (:map dired-mode-map
+    ;;       ("s->" . dired-omit-mode)) ;; toggle using Command-Shift-.  same as macOS Finder
+
+    :hook
+    (dired-mode . (lambda () (dired-omit-mode))) ;; hide .dot files by default
+
+    :config
+    (setq dired-omit-files   ;; hide .dot files when in dired-omit-mode
+          (concat dired-omit-files "\\|^\\..+$")))
+#+end_src
 
 ** Visual
 *** Highlight Symbol
