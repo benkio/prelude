@@ -2,6 +2,10 @@
 #+options: toc:2
 #+title: Emacs Configuration
 #+author: Enrico Benini
+
+#+begin_src emacs-lisp
+;;; -*- lexical-binding: t; -*-
+#+end_src
 * Emacs Prelude Config
 
 Contains the custom configuration for Prelude after proloading
@@ -49,6 +53,7 @@ Contains the custom configuration for Prelude after proloading
 - Dired displaying ls
 - Font
 #+begin_src emacs-lisp
+  (require 'org)
   (setq org-agenda-files '("~/Dropbox/notes/TODO.org"))
   (setq org-default-notes-file "~/Dropbox/notes/TODO.org")
   (setq org-capture-templates
@@ -146,6 +151,8 @@ In particular it enables ~dired-x~ and ~dired-omit-mode~
     :config
     ;; (setq dired-omit-files   ;; hide .dot files when in dired-omit-mode
     ;;       (concat dired-omit-files "\\|^\\..+$")))
+
+  )
 #+end_src
 
 ** Visual
