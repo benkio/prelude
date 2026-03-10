@@ -354,8 +354,14 @@ Quickly spawn a server at point. Serving current dir
   (use-package lorem-ipsum)
 #+end_src
 
-** Org-mode
-*** org-contrib: Ox-Extra
+** Markdown Laguages
+*** Markdown
+#+begin_src emacs-lisp
+  (use-package markdown-toc
+    :after markdown-mode)
+#+end_src
+*** Org-mode
+**** org-contrib: Ox-Extra
 Add the ox-extra module needed to add the :ignore: tag to org.
 Used to export the CV
 #+begin_src emacs-lisp
@@ -365,13 +371,13 @@ Used to export the CV
   (ox-extras-activate '(latex-header-blocks ignore-headlines))
 #+end_src
 
-*** Htmlize
+**** Htmlize
 
 #+begin_src emacs-lisp
   (use-package htmlize)
 #+end_src
 
-*** Github markdown conversion
+**** Github markdown conversion
 
 Converts org file to github markdown with the command: `M-x org-gfm-export-to-markdown`
 
@@ -381,7 +387,7 @@ Converts org file to github markdown with the command: `M-x org-gfm-export-to-ma
     :config
     (require 'ox-gfm nil t))
 #+end_src
-*** Reveal-js
+**** Reveal-js
 
 Slide generation from org
 
@@ -393,7 +399,7 @@ Slide generation from org
     (setq org-reveal-root "https://cdn.jsdelivr.net/npm/reveal.js@4.1.0")
     (setq org-reveal-mathjax t))
 #+end_src
-*** Export to Jira/Confluence
+**** Export to Jira/Confluence
 
 #+begin_src emacs-lisp
   (use-package ox-jira)
