@@ -149,8 +149,7 @@ In particular it enables ~dired-x~ and ~dired-omit-mode~
     (dired-mode . (lambda () (dired-omit-mode))) ;; hide .dot files by default
 
     :config
-    ;; (setq dired-omit-files   ;; hide .dot files when in dired-omit-mode
-    ;;       (concat dired-omit-files "\\|^\\..+$")))
+    (setq dired-omit-files "^\\.[^.]")
 
   )
 #+end_src
