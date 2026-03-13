@@ -150,6 +150,7 @@ In particular it enables ~dired-x~ and ~dired-omit-mode~
 
     :config
     (setq dired-omit-files "^\\.[^.]")
+    (dired-hide-details-mode)
 
   )
 #+end_src
