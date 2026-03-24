@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: test
+# key: test
+# --
+import { describe, expect, test } from '@jest/globals';
+
+describe('${1:`(nth 0 (s-slice-at "[.]"(buffer-name)))`}', () => {
+  test('returns absurd', () => {
+    expect(false).toBe(true)$0
+  })
+})
