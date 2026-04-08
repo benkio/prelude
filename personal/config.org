@@ -348,6 +348,11 @@ Quickly spawn a server at point. Serving current dir
   (use-package simple-httpd)
 #+end_src
 
+**** Git Link
+#+begin_src emacs-lisp
+  (use-package git-link)
+#+end_src
+
 **** Lorem Ipsum
 
 #+begin_src emacs-lisp
