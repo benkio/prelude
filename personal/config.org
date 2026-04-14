@@ -52,6 +52,7 @@ Contains the custom configuration for Prelude after proloading
 - Add Electric Pairs brackets
 - Dired displaying ls
 - Font
+- ~projectile-switch-project-action~ to ~projectile-vc~
 #+begin_src emacs-lisp
   (require 'org)
   (setq org-agenda-files '("~/Dropbox/notes/TODO.org"))
@@ -89,6 +90,7 @@ Contains the custom configuration for Prelude after proloading
                     :weight 'regular
                     :width 'expanded
                     :height 160)
+  (setq projectile-switch-project-action 'projectile-vc)
 #+end_src
 
 ** Theme
