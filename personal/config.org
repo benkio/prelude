@@ -30,8 +30,8 @@ Contains the custom configuration for Prelude after proloading
 1. Remove initial scratch buffer message
 2. Disable super keybindings
 3. Remove menu bar
-3. Remove tool bar
-3. Remove scroll bar
+4. Remove tool bar
+5. Remove scroll bar
 
 #+begin_src emacs-lisp
   ;; Remove initial scratch buffer message
@@ -141,20 +141,21 @@ In particular it enables ~dired-x~ and ~dired-omit-mode~
   (use-package dired
     :ensure nil
     :init
-    (require 'dired-x) ;; I think this is required for dired-omit-mode
+    (require 'dired-x)
 
-    ;; :bind
-    ;; (:map dired-mode-map
-    ;;       ("s->" . dired-omit-mode)) ;; toggle using Command-Shift-.  same as macOS Finder
-
-    :hook
-    (dired-mode . (lambda () (dired-omit-mode))) ;; hide .dot files by default
-
+    :hook ((dired-mode . dired-hide-details-mode)
+           (dired-mode . dired-omit-mode))
     :config
+    (use-package diredfl
+      :ensure t
+      :config
+      (diredfl-global-mode 1))
     (setq dired-omit-files "^\\.[^.]")
-    (dired-hide-details-mode)
-
-  )
+    )
+  (use-package dired-git-info
+    :ensure t
+    :bind (:map dired-mode-map
+                (")" . dired-git-info-mode)));; hide .dot files by default
 #+end_src
 
 ** Visual
