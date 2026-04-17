@@ -412,6 +412,17 @@ Slide generation from org
 #+begin_src emacs-lisp
   (use-package ox-jira)
 #+end_src
+**** Org-calendar Cursor Show
+For some reason the cursor doesn’t show in org-calendar. With this code it should Reference: https://emacs.stackexchange.com/questions/78420/use-keyboard-in-org-calendar
+
+#+begin_src emacs-lisp
+(defun org-calendar-cursor-show (orig-fun &rest args)
+  (when (equal (car args) '(setq cursor-type nil))
+    (setcar args '(setq cursor-type 'box)))
+  (apply orig-fun args))
+
+(advice-add 'org-eval-in-calendar :around #'org-calendar-cursor-show)
+#+end_src
 
 ** Search
 *** Ripgrep
