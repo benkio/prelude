@@ -76,10 +76,19 @@
 
 ;; smart pairing for all
 (require 'smartparens-config)
-(setq sp-base-key-bindings 'paredit)
+(setq sp-base-key-bindings 'sp)
 (setq sp-autoskip-closing-pair 'always)
 (setq sp-hybrid-kill-entire-symbol nil)
-(sp-use-paredit-bindings)
+(sp-use-smartparens-bindings)
+
+;; On macOS, add Super-based alternatives for common structural
+;; editing commands (à la Magnar Sveen's config)
+(when (eq system-type 'darwin)
+  (define-key smartparens-mode-map (kbd "s-s") #'sp-splice-sexp)
+  (define-key smartparens-mode-map (kbd "s-<right>") #'sp-forward-slurp-sexp)
+  (define-key smartparens-mode-map (kbd "s-<left>") #'sp-forward-barf-sexp)
+  (define-key smartparens-mode-map (kbd "s-<up>") #'sp-splice-sexp-killing-backward)
+  (define-key smartparens-mode-map (kbd "s-<down>") #'sp-splice-sexp-killing-forward))
 
 (show-smartparens-global-mode +1)
 
@@ -168,16 +177,19 @@
 (crux-with-region-or-line kill-region)
 
 ;; tramp, for sudo access
-(require 'tramp)
-;; keep in mind known issues with zsh - see emacs wiki
-(setq tramp-default-method "ssh")
+(use-package tramp
+  :defer t
+  :init
+  (setq tramp-default-method "ssh"))
 
 (set-default 'imenu-auto-rescan t)
 
 ;; flyspell-mode does spell-checking on the fly as you type
-(require 'flyspell)
-(setq ispell-program-name "aspell" ; use aspell instead of ispell
-      ispell-extra-args '("--sug-mode=ultra"))
+(use-package flyspell
+  :defer t
+  :init
+  (setq ispell-program-name "aspell"
+        ispell-extra-args '("--sug-mode=ultra")))
 
 (defun prelude-enable-flyspell ()
   "Enable command `flyspell-mode' if `prelude-flyspell' is not nil."
@@ -211,12 +223,15 @@
 ;; enable erase-buffer command
 (put 'erase-buffer 'disabled nil)
 
-(require 'expand-region)
+(use-package expand-region
+  :defer t)
 
 ;; bookmarks
-(require 'bookmark)
-(setq bookmark-default-file (expand-file-name "bookmarks" prelude-savefile-dir)
-      bookmark-save-flag 1)
+(use-package bookmark
+  :defer t
+  :init
+  (setq bookmark-default-file (expand-file-name "bookmarks" prelude-savefile-dir)
+        bookmark-save-flag 1))
 
 ;; projectile is a project management mode
 (when prelude-projectile
@@ -225,9 +240,11 @@
   (projectile-mode t))
 
 ;; avy allows us to effectively navigate to visible things
-(require 'avy)
-(setq avy-background t)
-(setq avy-style 'at-full)
+(use-package avy
+  :defer t
+  :init
+  (setq avy-background t
+        avy-style 'at-full))
 
 ;; show match count during isearch and query-replace
 (setq isearch-lazy-count t)
@@ -245,19 +262,22 @@
 (setq dired-dwim-target t)
 
 ;; enable some really cool extensions like C-x C-j(dired-jump)
-(require 'dired-x)
+(use-package dired-x
+  :after dired)
 
 ;; ediff - don't start another frame
-(require 'ediff)
-(setq ediff-window-setup-function 'ediff-setup-windows-plain)
+(use-package ediff
+  :defer t
+  :init
+  (setq ediff-window-setup-function 'ediff-setup-windows-plain))
 
 ;; clean up obsolete buffers automatically
 (require 'midnight)
 
 ;; smarter kill-ring navigation
-(require 'browse-kill-ring)
-(browse-kill-ring-default-keybindings)
-(global-set-key (kbd "s-y") 'browse-kill-ring)
+(use-package browse-kill-ring
+  :bind (("M-y" . browse-kill-ring)
+         ("s-y" . browse-kill-ring)))
 
 (define-advice exchange-point-and-mark (:before (&rest _) prelude-deactivate-mark)
   "When called with no active region, do not activate mark."
@@ -306,28 +326,34 @@ Does not indent if the mode is in `prelude-indent-sensitive-modes'."
 (add-to-list 'auto-mode-alist '("\\.zsh\\'" . shell-script-mode))
 
 ;; whitespace-mode config
-(require 'whitespace)
-(setq whitespace-line-column 80) ;; limit line length
-(setq whitespace-style '(face tabs empty trailing lines-tail))
+(use-package whitespace
+  :defer t
+  :init
+  (setq whitespace-line-column 80
+        whitespace-style '(face tabs empty trailing lines-tail)))
 
 ;; saner regex syntax
-(require 're-builder)
-(setq reb-re-syntax 'string)
+(use-package re-builder
+  :defer t
+  :init
+  (setq reb-re-syntax 'string))
 
-(require 'eshell)
-(setq eshell-directory-name (expand-file-name "eshell" prelude-savefile-dir))
+(use-package eshell
+  :defer t
+  :init
+  (setq eshell-directory-name (expand-file-name "eshell" prelude-savefile-dir)))
 
 (setq semanticdb-default-save-directory
       (expand-file-name "semanticdb" prelude-savefile-dir))
 
 ;; Compilation from Emacs
-(require 'compile)
-(setq compilation-ask-about-save nil
-      compilation-always-kill t
-      compilation-scroll-output 'first-error)
-
-;; Colorize output of Compilation Mode
-(add-hook 'compilation-filter-hook #'ansi-color-compilation-filter)
+(use-package compile
+  :defer t
+  :hook (compilation-filter . ansi-color-compilation-filter)
+  :init
+  (setq compilation-ask-about-save nil
+        compilation-always-kill t
+        compilation-scroll-output 'first-error))
 
 ;; enable Prelude's keybindings
 (prelude-mode t)
