@@ -2,6 +2,23 @@
 
 # Change log
 
+## Unreleased
+
+### Changes
+
+- Tidy up `prelude-common-lisp`: drop stale `slime-autodoc-use-multiline-p` setting (the variable was removed from upstream SLIME; modern autodoc honors `eldoc-echo-area-use-multiline-p`), set `inferior-lisp-program` to `sbcl` so `M-x run-lisp` works without SLIME, and add `slime-quicklisp` to `slime-contribs` for Quicklisp integration.
+
+### Bugs fixed
+
+- Update `prelude-helm` to current upstream variable/function names: rename `helm-google-suggest-use-curl-p` to `helm-net-prefer-curl` (deprecated alias since helm 1.7.7), rename `helm-split-window-in-side-p` to `helm-split-window-inside-p` (deprecated alias since helm 2.8.6), drop `helm-ff-file-name-history-use-recentf` (removed from helm; behavior is now unconditional), and drop the `C-c w` binding to `helm-wikipedia-suggest` (function moved to a separate `helm-wikipedia` package).
+- Drop `C-c C-l` binding to `helm-comint-input-ring` in `prelude-helm-everywhere` -- that command was removed from upstream helm.
+- Replace stale `erc-autoaway-use-emacs-idle` setting in `prelude-erc` with `(setq erc-autoaway-idle-method 'emacs)` (the old variable was removed; idle source is now selected via `erc-autoaway-idle-method`).
+- Rebind `M-s m` from removed `consult-multi-occur` to built-in `multi-occur` in `prelude-vertico` (consult dropped the wrapper in favor of the built-in command).
+- [#1450](https://github.com/bbatsov/prelude/issues/1450): Remove broken `slime-complete-symbol-function` setting in `prelude-common-lisp` (referenced an undefined `slime-flex-completions` symbol; the variable itself has been obsolete since 2015).
+- Fix `prelude-ocaml` integration with `neocaml`: hook into `neocaml-base-mode` (so `.mli` files are covered), enable `ocaml-eglot-mode` properly, and call `prelude-lsp-enable` so the LSP server actually starts.
+- Use `ocaml-eglot-mode` instead of the obsolete `ocaml-eglot` alias (renamed in `ocaml-eglot` 1.4.0).
+- Add a temporary `eglot-server-programs` entry for `neocaml` so older `neocaml` versions still get `ocamllsp` started. Can be removed once `neocaml >= 20260331` is widely available on MELPA.
+
 ## 2.1.0 (2026-03-29)
 
 ### New features
