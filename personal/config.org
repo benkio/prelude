@@ -406,12 +406,6 @@ Slide generation from org
     (require 'ox-reveal)
     (setq org-reveal-root "https://cdn.jsdelivr.net/npm/reveal.js@4.1.0")
     (setq org-reveal-mathjax t))
-
-  (use-package ox-reveal-layouts
-    :ensure t
-    :after (ox-reveal)
-    :bind (("C-c r l" . ox-reveal-layouts-menu))    ; Recommended binding
-    )
 #+end_src
 **** Export to Jira/Confluence
 
