@@ -25,6 +25,30 @@ Contains the custom configuration for Prelude after proloading
   (add-hook 'prog-mode-hook #'hs-minor-mode)
 #+end_src
 
+** Tree-sitter grammars
+
+Install grammars under =~/.emacs.d/tree-sitter/= and register download recipes.  This runs whenever =treesit= is first loaded (for example when opening TypeScript), not only when Nix mode is used.
+
+#+begin_src emacs-lisp
+  (with-eval-after-load 'treesit
+    (let ((treesit-dir (expand-file-name "tree-sitter" user-emacs-directory)))
+      (unless (file-directory-p treesit-dir)
+        (make-directory treesit-dir t))
+      (add-to-list 'treesit-extra-load-path treesit-dir))
+    ;; `treesit-language-source-alist` is nil by default; recipes are required
+    ;; for `M-x treesit-install-language-grammar`.
+    (dolist (recipe '((nix . ("https://github.com/nix-community/tree-sitter-nix"))
+                      (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" nil "typescript/src"))
+                      (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" nil "tsx/src"))))
+      (add-to-list 'treesit-language-source-alist recipe))
+    (dolist (gram '(nix typescript tsx))
+      (unless (treesit-language-available-p gram)
+        (condition-case err
+            (treesit-install-language-grammar gram)
+          (error
+           (message "treesit: failed installing %s grammar: %s" gram err))))))
+#+end_src
+
 ** Disable
 
 1. Remove initial scratch buffer message
@@ -55,6 +79,9 @@ Contains the custom configuration for Prelude after proloading
 - ~projectile-switch-project-action~ to ~projectile-vc~
 #+begin_src emacs-lisp
   (require 'org)
+  ;; Org defaults to `typescript-mode` (typescript.el); use built-in TS modes.
+  (when (fboundp 'typescript-ts-mode)
+    (add-to-list 'org-src-lang-modes '("typescript" . typescript-ts)))
   (setq org-agenda-files '("~/Dropbox/notes/TODO.org"))
   (setq org-default-notes-file "~/Dropbox/notes/TODO.org")
   (setq org-capture-templates
@@ -280,24 +307,6 @@ Add ~graphql-mode~
   (use-package nix-ts-mode
     :mode "\\.nix\\'"
     :config
-    (with-eval-after-load 'treesit
-      ;; Ensure Emacs can find grammars installed under ~/.emacs.d/tree-sitter/
-      (let ((treesit-dir (expand-file-name "tree-sitter" user-emacs-directory)))
-        (unless (file-directory-p treesit-dir)
-          (make-directory treesit-dir t))
-        (add-to-list 'treesit-extra-load-path treesit-dir))
-
-      ;; Tell Emacs where to fetch the Nix grammar from.
-      (add-to-list 'treesit-language-source-alist
-                   '(nix . ("https://github.com/nix-community/tree-sitter-nix")))
-
-      ;; Auto-install the grammar if it’s missing (but don’t hard-error on startup).
-      (unless (treesit-language-available-p 'nix)
-        (condition-case err
-            (treesit-install-language-grammar 'nix)
-          (error
-           (message "treesit: failed installing nix grammar: %s" err)))))
-
     ;; If some package selects `nix-mode`, prefer the tree-sitter mode.
     (add-to-list 'major-mode-remap-alist '(nix-mode . nix-ts-mode)))
 #+end_src
@@ -404,7 +413,9 @@ Slide generation from org
     :defer t
     :config
     (require 'ox-reveal)
-    (setq org-reveal-root "https://cdn.jsdelivr.net/npm/reveal.js@4.1.0")
+    ;; npm layout (dist/, plugin/); do not append /reveal.js. cdnjs 5.x layout differs from ox-reveal.
+    (setq org-reveal-root "https://cdn.jsdelivr.net/npm/reveal.js@5.2.1"
+          org-reveal-reveal-js-version 4)
     (setq org-reveal-mathjax t))
 #+end_src
 **** Export to Jira/Confluence
