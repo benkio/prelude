@@ -204,6 +204,7 @@ Useful in languages like ML, haskell, elm, scala 3..
 #+begin_src emacs-lisp
   (use-package indent-guide
     :config (indent-guide-global-mode)
+    (add-to-list 'indent-guide-inhibit-modes 'org-mode)
     (add-to-list 'indent-guide-inhibit-modes 'rg-mode)
     (add-to-list 'indent-guide-inhibit-modes 'compilation-mode))
 #+end_src
