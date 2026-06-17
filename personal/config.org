@@ -203,10 +203,31 @@ Useful in languages like ML, haskell, elm, scala 3..
 
 #+begin_src emacs-lisp
   (use-package indent-guide
-    :config (indent-guide-global-mode)
-    (add-to-list 'indent-guide-inhibit-modes 'org-mode)
-    (add-to-list 'indent-guide-inhibit-modes 'rg-mode)
-    (add-to-list 'indent-guide-inhibit-modes 'compilation-mode))
+    :config
+    (dolist (mode '(org-mode org-agenda-mode outline-mode
+                            rg-mode compilation-mode))
+      (add-to-list 'indent-guide-inhibit-modes mode))
+    (indent-guide-global-mode)
+    (defun my/indent-guide--org-buffer-p ()
+      "Non-nil when indent guides must not run (org + virtual indent)."
+      (or (derived-mode-p 'org-mode 'org-agenda-mode 'outline-mode)
+          (bound-and-true-p org-indent-mode)))
+    (defun my/indent-guide-mode--guard (orig &optional arg)
+      "Never enable indent-guide in org buffers."
+      (unless (my/indent-guide--org-buffer-p)
+        (funcall orig arg)))
+    (advice-add #'indent-guide-mode :around #'my/indent-guide-mode--guard)
+    (defun my/indent-guide-show--guard (orig &rest args)
+      (unless (my/indent-guide--org-buffer-p)
+        (condition-case err
+            (apply orig args)
+          (error
+           (indent-guide-remove)))))
+    (advice-add #'indent-guide-show :around #'my/indent-guide-show--guard)
+    (defun my/indent-guide-disable-in-org ()
+      (indent-guide-mode -1)
+      (indent-guide-remove))
+    (add-hook 'org-mode-hook #'my/indent-guide-disable-in-org))
 #+end_src
 ** Text Maniputanion
 *** Iedit
