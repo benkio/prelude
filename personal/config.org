@@ -410,6 +410,7 @@ Used to export the CV
   (require 'ox-extra) ;; the package I wanted to include in my config
   ;; and a function to activate the features of this package:
   (ox-extras-activate '(latex-header-blocks ignore-headlines))
+  (use-package ox-pandoc)
 #+end_src
 
 **** Htmlize
