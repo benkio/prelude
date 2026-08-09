@@ -1029,89 +1029,107 @@ Functions for formatting code.
 Functions based on `maestral` (`dropbox` alternative)
 
 #+begin_src emacs-lisp
-  (defun get-or-create-dropbox-link (file)
-    "Given an input file in Dropbox, this functions returns the Dropbox link related to it"
-    (unless (executable-find "maestral") (error "Please install maestral"))
-    (setq
-     filePathInDropbox (file-relative-name file "~/Dropbox")
-     getCommand (concat "maestral sharelink list \"" filePathInDropbox "\"")
-     createCommand (concat "maestral sharelink create \"" filePathInDropbox "\"")
-     dropboxLinks (delq nil (mapcar (lambda (s) (if (s-blank? s) nil s)) (s-split "\n" (shell-command-to-string getCommand))))
-     dropboxLink (seq-filter (lambda (link)(and (s-ends-with? "dl=0" link) (s-contains? (file-name-nondirectory file) link))) dropboxLinks)
-     )
-    (if (= (length dropboxLink) 1)
-        (progn (message (format "Get Dropbox Link for %s from %d links: %s" file (length dropboxLinks) dropboxLinks))
-               (message (format "Selected link %s" (car dropboxLink)))
-               (car dropboxLink))
-      (progn
-        (message (format "Create Dropbox Link for %s from %d links: %s" file (length dropboxLinks) dropboxLinks))
-        (shell-command createCommand)
-        (setq dropboxLinksCreate (s-split "\n" (shell-command-to-string getCommand)))
-        (car dropboxLinksCreate)
-        ))
-    )
+    (defun get-or-create-dropbox-link (file)
+      "Given an input file in Dropbox, this functions returns the Dropbox link related to it"
+      (unless (executable-find "maestral") (error "Please install maestral"))
+      (setq
+       filePathInDropbox (file-relative-name file "~/Dropbox")
+       getCommand (concat "maestral sharelink list \"" filePathInDropbox "\"")
+       createCommand (concat "maestral sharelink create \"" filePathInDropbox "\"")
+       dropboxLinks (delq nil (mapcar (lambda (s) (if (s-blank? s) nil s)) (s-split "\n" (shell-command-to-string getCommand))))
+       dropboxLink (seq-filter (lambda (link)(and (s-ends-with? "dl=0" link) (s-contains? (file-name-nondirectory file) link))) dropboxLinks)
+       )
+      (if (= (length dropboxLink) 1)
+          (progn (message (format "Get Dropbox Link for %s from %d links: %s" file (length dropboxLinks) dropboxLinks))
+                 (message (format "Selected link %s" (car dropboxLink)))
+                 (car dropboxLink))
+        (progn
+          (message (format "Create Dropbox Link for %s from %d links: %s" file (length dropboxLinks) dropboxLinks))
+          (shell-command createCommand)
+          (setq dropboxLinksCreate (s-split "\n" (shell-command-to-string getCommand)))
+          (car dropboxLinksCreate)
+          ))
+      )
 
-  (defun get-or-create-dropbox-links ()
-    "Given an input file lists in Dropbox, this function copy the Dropbox Links of them"
-    (interactive)
-    (setq links (seq-map (lambda (filename) (get-or-create-dropbox-link filename)) (dired-get-marked-files))
-          result (mapconcat 'identity links "\n")
-          )
-    (with-temp-buffer-window (make-temp-name "dropbox-link-copy-") nil nil (princ result))
-    )
+    (defun get-or-create-dropbox-links ()
+      "Given an input file lists in Dropbox, this function copy the Dropbox Links of them"
+      (interactive)
+      (setq links (seq-map (lambda (filename) (get-or-create-dropbox-link filename)) (dired-get-marked-files))
+            result (mapconcat 'identity links "\n")
+            )
+      (with-temp-buffer-window (make-temp-name "dropbox-link-copy-") nil nil (princ result))
+      )
 
-  (defvar my/mega-local-sync-dir (expand-file-name "~/Mega")
-    "Local directory synchronized with Mega.")
+    (defvar my/mega-local-sync-dir (expand-file-name "~/Mega")
+      "Local directory synchronized with Mega.")
 
-  (defvar my/mega-remote-sync-dir "/"
-    "Remote Mega directory mirroring `my/mega-local-sync-dir'.")
+    (defvar my/mega-remote-sync-dir "/"
+      "Remote Mega directory mirroring `my/mega-local-sync-dir'.")
 
-  (defvar my/mega-max-file-size-bytes (* 250 1024 1024)
-    "Maximum file size accepted by Mega link helper.
-If a file is bigger than this value, the command aborts.")
+    (defvar my/mega-max-file-size-bytes (* 250 1024 1024)
+      "Maximum file size accepted by Mega link helper.
+  If a file is bigger than this value, the command aborts.")
 
-  (defun my/mega--first-link-from-output (output)
-    "Extract the first Mega link from OUTPUT."
-    (car (seq-filter (lambda (line) (string-match-p "^https://mega\\.nz/" line))
-                     (split-string (s-trim output) "\n" t))))
+    (defun my/mega--first-link-from-output (output)
+      "Extract the first Mega link from OUTPUT."
+      (when (string-match "https?://mega\\.[^[:space:]]+" output)
+        (match-string 0 output)))
 
-  (defun get-or-create-mega-link (file)
-    "Given an input FILE in the Mega-synced folder, return its Mega link.
-If FILE is larger than `my/mega-max-file-size-bytes', abort."
-    (unless (executable-find "megatools") (error "Please install megatools"))
-    (let* ((absolute-file (expand-file-name file))
-           (file-size (file-attribute-size (file-attributes absolute-file)))
-           (local-root (file-name-as-directory (expand-file-name my/mega-local-sync-dir)))
-           (relative-path (file-relative-name absolute-file local-root)))
-      (when (string-prefix-p ".." relative-path)
-        (error "File is not inside synced dir %s: %s" local-root absolute-file))
-      (when (> file-size my/mega-max-file-size-bytes)
-        (error "File too large (%s bytes > %s bytes), aborting"
-               file-size my/mega-max-file-size-bytes))
-      (let* ((remote-path (concat (file-name-as-directory my/mega-remote-sync-dir) relative-path))
-             (get-command (format "megatools export %s" (shell-quote-argument remote-path)))
-             (create-command (format "megatools export -a %s" (shell-quote-argument remote-path)))
-             (existing-output (shell-command-to-string get-command))
-             (existing-link (my/mega--first-link-from-output existing-output)))
-        (if existing-link
+  (defun my/mega--run-command (command &optional tolerated-error-regexp)
+      "Run COMMAND and return its output.
+  Raise an error including stderr when COMMAND fails."
+      (with-temp-buffer
+        (let ((exit-code (shell-command command (current-buffer) (current-buffer)))
+              (output nil))
+          (setq output (s-trim (buffer-string)))
+        ;; Some `mega-export` builds can return non-zero while still printing a
+        ;; valid link (e.g. when an export already exists). Accept that case.
+        (unless (or (zerop exit-code)
+                    (my/mega--first-link-from-output output)
+                    (and tolerated-error-regexp
+                         (string-match-p tolerated-error-regexp output)))
+            (error "Command failed (exit %s): %s\n%s"
+                   exit-code command
+                   (if (s-blank? output) "(no output)" output)))
+          output)))
+
+    (defun get-or-create-mega-link (file)
+      "Given an input FILE in the Mega-synced folder, return its Mega link.
+  If FILE is larger than `my/mega-max-file-size-bytes', abort."
+      (unless (executable-find "mega-export") (error "Please install mega-cmd (mega-export)"))
+      (let* ((absolute-file (expand-file-name file))
+             (file-size (file-attribute-size (file-attributes absolute-file)))
+             (local-root (file-name-as-directory (expand-file-name my/mega-local-sync-dir)))
+             (relative-path (file-relative-name absolute-file local-root)))
+        (when (string-prefix-p ".." relative-path)
+          (error "File is not inside synced dir %s: %s" local-root absolute-file))
+        (when (> file-size my/mega-max-file-size-bytes)
+          (error "File too large (%s bytes > %s bytes), aborting"
+                 file-size my/mega-max-file-size-bytes))
+        (let* ((remote-path (concat (file-name-as-directory my/mega-remote-sync-dir) relative-path))
+               (get-command (format "mega-export %s" (shell-quote-argument remote-path)))
+               (create-command (format "mega-export -a -f %s" (shell-quote-argument remote-path)))
+             (existing-output (my/mega--run-command get-command "is not exported\\. Use -a to export it"))
+               (existing-link (my/mega--first-link-from-output existing-output)))
+          (if existing-link
+              (progn
+                (message "Get Mega Link for %s: %s" file existing-link)
+                existing-link)
             (progn
-              (message "Get Mega Link for %s: %s" file existing-link)
-              existing-link)
-          (progn
-            (message "Create Mega Link for %s" file)
-            (shell-command create-command)
-            (let ((created-link (my/mega--first-link-from-output (shell-command-to-string get-command))))
-              (unless created-link
-                (error "Mega link not found after creation for: %s" file))
-              created-link))))))
+              (message "Create Mega Link for %s" file)
+              (let* ((created-output (my/mega--run-command create-command))
+                     (created-link (my/mega--first-link-from-output created-output)))
+                (unless created-link
+                  (error "Mega link not found after creation for: %s" file))
+                created-link))))))
 
-  (defun get-or-create-mega-links ()
-    "Given marked files in dired, copy the Mega links of them."
-    (interactive)
-    (let* ((links (seq-map (lambda (filename) (get-or-create-mega-link filename))
-                           (dired-get-marked-files)))
-           (result (mapconcat #'identity links "\n")))
-      (with-temp-buffer-window (make-temp-name "mega-link-copy-") nil nil (princ result))))
+    (defun get-or-create-mega-links ()
+      "Given marked files in dired, copy the Mega links of them."
+      (interactive)
+      (let* ((links (seq-map (lambda (filename) (get-or-create-mega-link filename))
+                             (dired-get-marked-files)))
+             (result (mapconcat #'identity links "\n")))
+        (with-temp-buffer-window (make-temp-name "mega-link-copy-") nil nil (princ result))))
 #+end_src
 
 ** Magit
