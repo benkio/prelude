@@ -1124,11 +1124,15 @@ Functions based on `maestral` (`dropbox` alternative)
                 created-link))))))
 
     (defun get-or-create-mega-links ()
-      "Given marked files in dired, copy the Mega links of them."
+      "Given marked files in dired, copy lines in filename=mega_link format."
       (interactive)
-      (let* ((links (seq-map (lambda (filename) (get-or-create-mega-link filename))
-                             (dired-get-marked-files)))
-             (result (mapconcat #'identity links "\n")))
+      (let* ((entries (seq-map
+                       (lambda (filename)
+                         (let* ((link (get-or-create-mega-link filename))
+                                (basename (file-name-nondirectory filename)))
+                           (format "%s=%s" basename link)))
+                       (dired-get-marked-files)))
+             (result (mapconcat #'identity entries "\n")))
         (with-temp-buffer-window (make-temp-name "mega-link-copy-") nil nil (princ result))))
 #+end_src
 
