@@ -144,6 +144,35 @@ You can also find a lot of information about specific Prelude
 features and the rationale behind them on my Emacs blog
 [Emacs Redux](https://emacsredux.com).
 
+## Local Post-Update Steps (benkio setup)
+
+After running your Nix update (`home-manager switch --flake ~/nix-config#benkio@macos`),
+Mega sync requires an authenticated MEGA session.
+
+```shell
+mega-whoami
+```
+
+If it prints `Not logged in`, run:
+
+```shell
+mega-login <your-mega-email>
+mega-sync ~/Mega /
+```
+
+Verify sync status:
+
+```shell
+mega-sync
+mega-transfers
+```
+
+Notes:
+
+- `~/Mega` is the local folder.
+- `/` is the remote root folder inside your MEGA cloud account.
+- The update config starts `mega-cmd-server`, but it cannot sync until login is completed.
+
 ## crux and super-save
 
 A lot of utility commands that used to be part of Prelude were

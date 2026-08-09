@@ -1063,7 +1063,7 @@ Functions based on `maestral` (`dropbox` alternative)
   (defvar my/mega-local-sync-dir (expand-file-name "~/Mega")
     "Local directory synchronized with Mega.")
 
-  (defvar my/mega-remote-sync-dir "/Root/Mega"
+  (defvar my/mega-remote-sync-dir "/"
     "Remote Mega directory mirroring `my/mega-local-sync-dir'.")
 
   (defvar my/mega-max-file-size-bytes (* 250 1024 1024)
