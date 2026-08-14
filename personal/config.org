@@ -170,6 +170,24 @@ Not native support for cursor-cli. Just installing it for now. Setup later
   (use-package gptel)
 #+end_src
 
+*** agent-shell
+Native ACP shell integration for Cursor and OpenCode CLIs.
+
+#+begin_src emacs-lisp
+  (use-package agent-shell
+    :config
+    ;; Keep PATH in sync so `agent` and `opencode` are discoverable.
+    ;; (let ((opencode-bin (expand-file-name "~/.opencode/bin")))
+    ;;   (add-to-list 'exec-path opencode-bin)
+    ;;   (unless (string-match-p (regexp-quote opencode-bin) (or (getenv "PATH") ""))
+    ;;     (setenv "PATH" (concat opencode-bin path-separator (getenv "PATH")))))
+    ;; (setq agent-shell-cursor-environment
+    ;;       (agent-shell-make-environment-variables :inherit-env t))
+    ;; (setq agent-shell-opencode-environment
+    ;;       (agent-shell-make-environment-variables :inherit-env t))
+    )
+#+end_src
+
 *** dired
 
 In particular it enables ~dired-x~ and ~dired-omit-mode~
