@@ -160,23 +160,18 @@ Install grammars under =~/.emacs.d/tree-sitter/= and register download recipes. 
     (yas-reload-all))
 #+END_SRC
 
-*** gptel
-Interact with Cursor CLI (agent) from Emacs via a local proxy.
-Start the proxy first: ~node ~/.emacs.d/personal/cursor-cli-proxy.js~ (or run in background).
-
-Not native support for cursor-cli. Just installing it for now. Setup later
-
-#+begin_src emacs-lisp
-  (use-package gptel)
-#+end_src
-
 *** agent-shell
 Native ACP shell integration for Cursor and OpenCode CLIs.
 
 #+begin_src emacs-lisp
   (use-package agent-shell
     :config
-    ;; Keep PATH in sync so `agent` is discoverable.
+    ;; Keep PATH/exec-path in sync so `agent` is discoverable.
+    (let ((local-bin (expand-file-name "~/.local/bin")))
+      (unless (member local-bin exec-path)
+        (add-to-list 'exec-path local-bin))
+      (unless (string-match-p (regexp-quote local-bin) (or (getenv "PATH") ""))
+        (setenv "PATH" (concat local-bin path-separator (or (getenv "PATH") "")))))
     (setq agent-shell-cursor-environment
           (agent-shell-make-environment-variables :inherit-env t))
     )
