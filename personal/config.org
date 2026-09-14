@@ -221,6 +221,9 @@ Useful in languages like ML, haskell, elm, scala 3..
 #+begin_src emacs-lisp
   (use-package indent-guide
     :config
+    ;; Emacs 31 can call this helper before `define-minor-mode` creates it
+    ;; when stale autoload/native-cache code is around.
+    (defvar-local indent-guide-mode--set-explicitly nil)
     (dolist (mode '(org-mode org-agenda-mode outline-mode
                             rg-mode compilation-mode))
       (add-to-list 'indent-guide-inhibit-modes mode))
