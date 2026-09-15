@@ -257,7 +257,7 @@ Editing mulitiple occurrences of the same highlighted word at once.
 #+begin_src emacs-lisp
   (use-package iedit
     :config
-    (global-set-key (kbd "C-c i e") #'iedit-mode)
+    (global-set-key (kbd "C-c ; i") #'iedit-mode)
     )
 #+end_src
 *** format-all
