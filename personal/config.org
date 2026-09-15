@@ -255,7 +255,15 @@ Useful in languages like ML, haskell, elm, scala 3..
 Editing mulitiple occurrences of the same highlighted word at once.
 
 #+begin_src emacs-lisp
-  (use-package iedit)
+  (use-package iedit
+    :config
+    ;; Keep iedit active in regular editing buffers.
+    (defun my/enable-iedit-in-buffer ()
+      (unless (minibufferp)
+        (iedit-mode 1)))
+    (add-hook 'after-change-major-mode-hook #'my/enable-iedit-in-buffer)
+    (global-set-key (kbd "C-c i e") #'iedit-mode)
+    )
 #+end_src
 *** format-all
 
