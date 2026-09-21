@@ -16,6 +16,7 @@ Contains the custom configuration for Prelude after proloading
 1. use-package ensure t
 2. abbrev mode always on and load personal abbrevs globally
 3. hs-minor-mode in prog modes
+4. autorevert mode global
 
 #+begin_src emacs-lisp
   (setq use-package-always-ensure t)
@@ -23,6 +24,7 @@ Contains the custom configuration for Prelude after proloading
   ;; Load personal abbrev table and make it available in all buffers
   (load-file (expand-file-name "personal/abbrev_defs" user-emacs-directory))
   (add-hook 'prog-mode-hook #'hs-minor-mode)
+  (global-auto-revert-mode 1)
 #+end_src
 
 ** Tree-sitter grammars
