@@ -438,6 +438,43 @@ Add ~graphql-mode~
 (use-package sbt-mode
   :commands sbt-start sbt-command
   :config
+  (defvar benkio/sbt-rgrep-use-rg nil
+    "When non-nil, translate grep BRE regexps for ripgrep.")
+
+  (defconst benkio/sbt-rg-find-template
+    "rg --no-heading --line-number --color never <C> -e <R> <D>"
+    "Use ripgrep for `sbt-mode' recursive searches.")
+
+  (defun benkio/sbt-bre-to-rg-regexp (regexp)
+    "Translate grep BRE escapes in REGEXP to rg syntax."
+    (let ((re regexp))
+      (setq re (replace-regexp-in-string (regexp-quote "\\(") "(" re t t))
+      (setq re (replace-regexp-in-string (regexp-quote "\\)") ")" re t t))
+      (setq re (replace-regexp-in-string (regexp-quote "\\|") "|" re t t))
+      (setq re (replace-regexp-in-string (regexp-quote "\\+") "+" re t t))
+      re))
+
+  (defun benkio/sbt-rgrep-use-rg-regexp (fn regexp &optional files dir confirm)
+    "Convert sbt-mode grep regexps before calling FN."
+    (if benkio/sbt-rgrep-use-rg
+        (funcall fn (benkio/sbt-bre-to-rg-regexp regexp) files dir confirm)
+      (funcall fn regexp files dir confirm)))
+
+  (defun benkio/sbt-use-rg-for-rgrep (fn &rest args)
+    "Run sbt rgrep helpers with ripgrep instead of grep."
+    (let ((grep-find-template benkio/sbt-rg-find-template)
+          (benkio/sbt-rgrep-use-rg t))
+      (apply fn args)))
+
+  (unless (advice-member-p #'benkio/sbt-rgrep-use-rg-regexp 'rgrep)
+    (advice-add 'rgrep :around #'benkio/sbt-rgrep-use-rg-regexp))
+  (unless (advice-member-p #'benkio/sbt-use-rg-for-rgrep 'sbt-grep)
+    (advice-add 'sbt-grep :around #'benkio/sbt-use-rg-for-rgrep))
+  (unless (advice-member-p #'benkio/sbt-use-rg-for-rgrep 'sbt-find-usages)
+    (advice-add 'sbt-find-usages :around #'benkio/sbt-use-rg-for-rgrep))
+  (unless (advice-member-p #'benkio/sbt-use-rg-for-rgrep 'sbt-find-definitions)
+    (advice-add 'sbt-find-definitions :around #'benkio/sbt-use-rg-for-rgrep))
+
   ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
   ;; allows using SPACE when in the minibuffer
   (substitute-key-definition
