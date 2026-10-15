@@ -527,6 +527,24 @@ Quickly spawn a server at point. Serving current dir
 ** Markdown Laguages
 *** Markdown
 #+begin_src emacs-lisp
+  ;; Large markdown tables can be extremely slow to fontify in `markdown-mode`.
+  ;; Keep markdown features for small files and fall back for large ones.
+  (defvar my/markdown-large-file-threshold (* 512 1024)
+    "Maximum markdown file size (bytes) before falling back to `fundamental-mode'.")
+
+  (defun my/markdown-maybe-fallback ()
+    "Switch large markdown buffers to `fundamental-mode' for responsiveness."
+    (when (and buffer-file-name
+               (derived-mode-p 'markdown-mode)
+               (file-regular-p buffer-file-name))
+      (let ((size (file-attribute-size (file-attributes buffer-file-name))))
+        (when (> size my/markdown-large-file-threshold)
+          (message "Large markdown file (%s), switching to fundamental-mode"
+                   (file-size-human-readable size))
+          (fundamental-mode)))))
+
+  (add-hook 'markdown-mode-hook #'my/markdown-maybe-fallback)
+
   (use-package markdown-toc
     :after markdown-mode)
 #+end_src
