@@ -196,6 +196,9 @@ In particular it enables ~dired-x~ and ~dired-omit-mode~
     (use-package diredfl
       :ensure t
       :config
+      ;; Work around occasional Emacs 31/native-comp state where this
+      ;; helper var is referenced before `define-minor-mode` creates it.
+      (defvar-local diredfl-mode--set-explicitly nil)
       (diredfl-global-mode 1))
     (setq dired-omit-files "^\\.[^.]")
     )
