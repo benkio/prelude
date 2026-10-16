@@ -20,6 +20,7 @@ Contains the custom configuration for Prelude after proloading
 
 #+begin_src emacs-lisp
   (setq use-package-always-ensure t)
+  (setq prelude-lsp-client 'lsp-mode)
   (setq-default abbrev-mode t)
   ;; Load personal abbrev table and make it available in all buffers
   (load-file (expand-file-name "personal/abbrev_defs" user-emacs-directory))
@@ -308,8 +309,7 @@ Package to cycle and change between different cases: camel, underscore, lower...
     ;; `lsp-semantic-tokens-enable' variable. Also you might want to disable highlighting of modifiers
     ;; setting `lsp-semantic-tokens-apply-modifiers' to `nil' because metals sends `abstract' modifier
     ;; which is mapped to `keyword' face.
-    (lsp-metals-enable-semantic-highlighting t)
-    :hook (scala-mode . lsp))
+    (lsp-metals-enable-semantic-highlighting t))
 #+end_src
 **** Smithy
 #+begin_src emacs-lisp
