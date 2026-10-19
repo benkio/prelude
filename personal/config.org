@@ -440,7 +440,7 @@ Add ~graphql-mode~
 #+BEGIN_SRC emacs-lisp
 (use-package sbt-mode
   :commands sbt-start sbt-command
-  :config
+  :preface
   (defvar benkio/sbt-rgrep-use-rg nil
     "When non-nil, translate grep BRE regexps for ripgrep.")
 
@@ -468,7 +468,7 @@ Add ~graphql-mode~
     (let ((grep-find-template benkio/sbt-rg-find-template)
           (benkio/sbt-rgrep-use-rg t))
       (apply fn args)))
-
+  :init
   (unless (advice-member-p #'benkio/sbt-rgrep-use-rg-regexp 'rgrep)
     (advice-add 'rgrep :around #'benkio/sbt-rgrep-use-rg-regexp))
   (unless (advice-member-p #'benkio/sbt-use-rg-for-rgrep 'sbt-grep)
@@ -477,7 +477,7 @@ Add ~graphql-mode~
     (advice-add 'sbt-find-usages :around #'benkio/sbt-use-rg-for-rgrep))
   (unless (advice-member-p #'benkio/sbt-use-rg-for-rgrep 'sbt-find-definitions)
     (advice-add 'sbt-find-definitions :around #'benkio/sbt-use-rg-for-rgrep))
-
+  :config
   ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
   ;; allows using SPACE when in the minibuffer
   (substitute-key-definition
